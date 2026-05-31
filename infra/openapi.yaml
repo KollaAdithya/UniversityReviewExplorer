@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: Course Review Explorer API
+  version: 2.0.0
+servers:
+  - url: https://{gateway_host}
+    variables:
+      gateway_host:
+        default: course-review-gateway.example.com
+paths:
+  /health:
+    get:
+      operationId: health
+      x-google-backend:
+        address: https://BACKEND_URL/health
+      responses:
+        "200":
+          description: OK
+  /api/v1/universities:
+    get:
+      operationId: listUniversities
+      x-google-backend:
+        address: https://BACKEND_URL/api/v1/universities
+      responses:
+        "200":
+          description: OK

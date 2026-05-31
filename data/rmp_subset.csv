@@ -1,0 +1,145 @@
+school,first_name,last_name,class,course_name,department,comment,quality,difficulty,date,tags
+Massachusetts Institute of Technology,Alice,Chen,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,3,2,3/15/2023,Projects|Workload|Exams
+Massachusetts Institute of Technology,Alice,Chen,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Chen is very engaging.,4,2,11/2/2022,Lectures|Grading|Assignments
+Massachusetts Institute of Technology,Alice,Chen,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,5,2,5/10/2024,Workload|Exams|Projects
+Massachusetts Institute of Technology,Bob,Rivera,CS201,Data Structures,CS,Challenging assignments but fair exams.,4,3,11/2/2022,Lectures|Grading|Assignments
+Massachusetts Institute of Technology,Bob,Rivera,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Rivera is very engaging.,5,3,5/10/2024,Workload|Exams|Projects
+Massachusetts Institute of Technology,Bob,Rivera,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,3,3,9/1/2021,Projects|Lectures
+Massachusetts Institute of Technology,Carol,Wu,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,5,4,5/10/2024,Workload|Exams|Projects
+Massachusetts Institute of Technology,Carol,Wu,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Wu is very engaging.,3,4,9/1/2021,Projects|Lectures
+Massachusetts Institute of Technology,Carol,Wu,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,4,4,1/20/2023,Grading|Exams|Workload
+Massachusetts Institute of Technology,David,Smith,EE210,Circuits I,EE,Clear explanations and practical labs.,3,5,9/1/2021,Projects|Lectures
+Massachusetts Institute of Technology,David,Smith,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Smith is very engaging.,4,5,1/20/2023,Grading|Exams|Workload
+Massachusetts Institute of Technology,David,Smith,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,5,5,3/15/2023,Projects|Workload|Exams
+Massachusetts Institute of Technology,Elena,Park,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,4,2,1/20/2023,Grading|Exams|Workload
+Massachusetts Institute of Technology,Elena,Park,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Park is very engaging.,5,2,3/15/2023,Projects|Workload|Exams
+Massachusetts Institute of Technology,Elena,Park,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,3,2,11/2/2022,Lectures|Grading|Assignments
+Massachusetts Institute of Technology,Frank,Nguyen,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,5,3,3/15/2023,Projects|Workload|Exams
+Massachusetts Institute of Technology,Frank,Nguyen,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+Massachusetts Institute of Technology,Frank,Nguyen,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,4,3,5/10/2024,Workload|Exams|Projects
+Stanford University,Bob,Rivera,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,4,3,11/2/2022,Lectures|Grading|Assignments
+Stanford University,Bob,Rivera,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Rivera is very engaging.,5,3,5/10/2024,Workload|Exams|Projects
+Stanford University,Bob,Rivera,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,3,3,9/1/2021,Projects|Lectures
+Stanford University,Carol,Wu,CS201,Data Structures,CS,Challenging assignments but fair exams.,5,4,5/10/2024,Workload|Exams|Projects
+Stanford University,Carol,Wu,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Wu is very engaging.,3,4,9/1/2021,Projects|Lectures
+Stanford University,Carol,Wu,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,4,4,1/20/2023,Grading|Exams|Workload
+Stanford University,David,Smith,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,3,5,9/1/2021,Projects|Lectures
+Stanford University,David,Smith,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Smith is very engaging.,4,5,1/20/2023,Grading|Exams|Workload
+Stanford University,David,Smith,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,5,5,3/15/2023,Projects|Workload|Exams
+Stanford University,Elena,Park,EE210,Circuits I,EE,Clear explanations and practical labs.,4,2,1/20/2023,Grading|Exams|Workload
+Stanford University,Elena,Park,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Park is very engaging.,5,2,3/15/2023,Projects|Workload|Exams
+Stanford University,Elena,Park,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,3,2,11/2/2022,Lectures|Grading|Assignments
+Stanford University,Frank,Nguyen,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,5,3,3/15/2023,Projects|Workload|Exams
+Stanford University,Frank,Nguyen,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+Stanford University,Frank,Nguyen,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,4,3,5/10/2024,Workload|Exams|Projects
+Stanford University,Grace,Lee,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,3,4,11/2/2022,Lectures|Grading|Assignments
+Stanford University,Grace,Lee,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+Stanford University,Grace,Lee,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,5,4,9/1/2021,Projects|Lectures
+University of California Berkeley,Carol,Wu,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,5,4,5/10/2024,Workload|Exams|Projects
+University of California Berkeley,Carol,Wu,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Wu is very engaging.,3,4,9/1/2021,Projects|Lectures
+University of California Berkeley,Carol,Wu,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,4,4,1/20/2023,Grading|Exams|Workload
+University of California Berkeley,David,Smith,CS201,Data Structures,CS,Challenging assignments but fair exams.,3,5,9/1/2021,Projects|Lectures
+University of California Berkeley,David,Smith,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Smith is very engaging.,4,5,1/20/2023,Grading|Exams|Workload
+University of California Berkeley,David,Smith,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,5,5,3/15/2023,Projects|Workload|Exams
+University of California Berkeley,Elena,Park,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,4,2,1/20/2023,Grading|Exams|Workload
+University of California Berkeley,Elena,Park,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Park is very engaging.,5,2,3/15/2023,Projects|Workload|Exams
+University of California Berkeley,Elena,Park,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,3,2,11/2/2022,Lectures|Grading|Assignments
+University of California Berkeley,Frank,Nguyen,EE210,Circuits I,EE,Clear explanations and practical labs.,5,3,3/15/2023,Projects|Workload|Exams
+University of California Berkeley,Frank,Nguyen,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+University of California Berkeley,Frank,Nguyen,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,4,3,5/10/2024,Workload|Exams|Projects
+University of California Berkeley,Grace,Lee,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,3,4,11/2/2022,Lectures|Grading|Assignments
+University of California Berkeley,Grace,Lee,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+University of California Berkeley,Grace,Lee,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,5,4,9/1/2021,Projects|Lectures
+University of California Berkeley,Henry,Brown,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,4,5,5/10/2024,Workload|Exams|Projects
+University of California Berkeley,Henry,Brown,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+University of California Berkeley,Henry,Brown,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,3,5,1/20/2023,Grading|Exams|Workload
+Carnegie Mellon University,David,Smith,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,3,5,9/1/2021,Projects|Lectures
+Carnegie Mellon University,David,Smith,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Smith is very engaging.,4,5,1/20/2023,Grading|Exams|Workload
+Carnegie Mellon University,David,Smith,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,5,5,3/15/2023,Projects|Workload|Exams
+Carnegie Mellon University,Elena,Park,CS201,Data Structures,CS,Challenging assignments but fair exams.,4,2,1/20/2023,Grading|Exams|Workload
+Carnegie Mellon University,Elena,Park,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Park is very engaging.,5,2,3/15/2023,Projects|Workload|Exams
+Carnegie Mellon University,Elena,Park,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,3,2,11/2/2022,Lectures|Grading|Assignments
+Carnegie Mellon University,Frank,Nguyen,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,5,3,3/15/2023,Projects|Workload|Exams
+Carnegie Mellon University,Frank,Nguyen,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+Carnegie Mellon University,Frank,Nguyen,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,4,3,5/10/2024,Workload|Exams|Projects
+Carnegie Mellon University,Grace,Lee,EE210,Circuits I,EE,Clear explanations and practical labs.,3,4,11/2/2022,Lectures|Grading|Assignments
+Carnegie Mellon University,Grace,Lee,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+Carnegie Mellon University,Grace,Lee,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,5,4,9/1/2021,Projects|Lectures
+Carnegie Mellon University,Henry,Brown,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,4,5,5/10/2024,Workload|Exams|Projects
+Carnegie Mellon University,Henry,Brown,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+Carnegie Mellon University,Henry,Brown,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,3,5,1/20/2023,Grading|Exams|Workload
+Carnegie Mellon University,Alice,Chen,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,5,2,9/1/2021,Projects|Lectures
+Carnegie Mellon University,Alice,Chen,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Chen is very engaging.,3,2,1/20/2023,Grading|Exams|Workload
+Carnegie Mellon University,Alice,Chen,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,4,2,3/15/2023,Projects|Workload|Exams
+Harvard University,Elena,Park,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,4,2,1/20/2023,Grading|Exams|Workload
+Harvard University,Elena,Park,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Park is very engaging.,5,2,3/15/2023,Projects|Workload|Exams
+Harvard University,Elena,Park,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,3,2,11/2/2022,Lectures|Grading|Assignments
+Harvard University,Frank,Nguyen,CS201,Data Structures,CS,Challenging assignments but fair exams.,5,3,3/15/2023,Projects|Workload|Exams
+Harvard University,Frank,Nguyen,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+Harvard University,Frank,Nguyen,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,4,3,5/10/2024,Workload|Exams|Projects
+Harvard University,Grace,Lee,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,3,4,11/2/2022,Lectures|Grading|Assignments
+Harvard University,Grace,Lee,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+Harvard University,Grace,Lee,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,5,4,9/1/2021,Projects|Lectures
+Harvard University,Henry,Brown,EE210,Circuits I,EE,Clear explanations and practical labs.,4,5,5/10/2024,Workload|Exams|Projects
+Harvard University,Henry,Brown,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+Harvard University,Henry,Brown,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,3,5,1/20/2023,Grading|Exams|Workload
+Harvard University,Alice,Chen,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,5,2,9/1/2021,Projects|Lectures
+Harvard University,Alice,Chen,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Chen is very engaging.,3,2,1/20/2023,Grading|Exams|Workload
+Harvard University,Alice,Chen,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,4,2,3/15/2023,Projects|Workload|Exams
+Harvard University,Bob,Rivera,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,3,3,1/20/2023,Grading|Exams|Workload
+Harvard University,Bob,Rivera,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Rivera is very engaging.,4,3,3/15/2023,Projects|Workload|Exams
+Harvard University,Bob,Rivera,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,5,3,11/2/2022,Lectures|Grading|Assignments
+Georgia Institute of Technology,Frank,Nguyen,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,5,3,3/15/2023,Projects|Workload|Exams
+Georgia Institute of Technology,Frank,Nguyen,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Nguyen is very engaging.,3,3,11/2/2022,Lectures|Grading|Assignments
+Georgia Institute of Technology,Frank,Nguyen,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,4,3,5/10/2024,Workload|Exams|Projects
+Georgia Institute of Technology,Grace,Lee,CS201,Data Structures,CS,Challenging assignments but fair exams.,3,4,11/2/2022,Lectures|Grading|Assignments
+Georgia Institute of Technology,Grace,Lee,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+Georgia Institute of Technology,Grace,Lee,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,5,4,9/1/2021,Projects|Lectures
+Georgia Institute of Technology,Henry,Brown,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,4,5,5/10/2024,Workload|Exams|Projects
+Georgia Institute of Technology,Henry,Brown,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+Georgia Institute of Technology,Henry,Brown,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,3,5,1/20/2023,Grading|Exams|Workload
+Georgia Institute of Technology,Alice,Chen,EE210,Circuits I,EE,Clear explanations and practical labs.,5,2,9/1/2021,Projects|Lectures
+Georgia Institute of Technology,Alice,Chen,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Chen is very engaging.,3,2,1/20/2023,Grading|Exams|Workload
+Georgia Institute of Technology,Alice,Chen,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,4,2,3/15/2023,Projects|Workload|Exams
+Georgia Institute of Technology,Bob,Rivera,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,3,3,1/20/2023,Grading|Exams|Workload
+Georgia Institute of Technology,Bob,Rivera,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Rivera is very engaging.,4,3,3/15/2023,Projects|Workload|Exams
+Georgia Institute of Technology,Bob,Rivera,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,5,3,11/2/2022,Lectures|Grading|Assignments
+Georgia Institute of Technology,Carol,Wu,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,4,4,3/15/2023,Projects|Workload|Exams
+Georgia Institute of Technology,Carol,Wu,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Wu is very engaging.,5,4,11/2/2022,Lectures|Grading|Assignments
+Georgia Institute of Technology,Carol,Wu,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,3,4,5/10/2024,Workload|Exams|Projects
+University of Michigan,Grace,Lee,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,3,4,11/2/2022,Lectures|Grading|Assignments
+University of Michigan,Grace,Lee,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Lee is very engaging.,4,4,5/10/2024,Workload|Exams|Projects
+University of Michigan,Grace,Lee,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,5,4,9/1/2021,Projects|Lectures
+University of Michigan,Henry,Brown,CS201,Data Structures,CS,Challenging assignments but fair exams.,4,5,5/10/2024,Workload|Exams|Projects
+University of Michigan,Henry,Brown,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+University of Michigan,Henry,Brown,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,3,5,1/20/2023,Grading|Exams|Workload
+University of Michigan,Alice,Chen,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,5,2,9/1/2021,Projects|Lectures
+University of Michigan,Alice,Chen,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Chen is very engaging.,3,2,1/20/2023,Grading|Exams|Workload
+University of Michigan,Alice,Chen,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,4,2,3/15/2023,Projects|Workload|Exams
+University of Michigan,Bob,Rivera,EE210,Circuits I,EE,Clear explanations and practical labs.,3,3,1/20/2023,Grading|Exams|Workload
+University of Michigan,Bob,Rivera,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Rivera is very engaging.,4,3,3/15/2023,Projects|Workload|Exams
+University of Michigan,Bob,Rivera,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,5,3,11/2/2022,Lectures|Grading|Assignments
+University of Michigan,Carol,Wu,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,4,4,3/15/2023,Projects|Workload|Exams
+University of Michigan,Carol,Wu,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Wu is very engaging.,5,4,11/2/2022,Lectures|Grading|Assignments
+University of Michigan,Carol,Wu,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,3,4,5/10/2024,Workload|Exams|Projects
+University of Michigan,David,Smith,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,5,5,11/2/2022,Lectures|Grading|Assignments
+University of Michigan,David,Smith,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Smith is very engaging.,3,5,5/10/2024,Workload|Exams|Projects
+University of Michigan,David,Smith,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,4,5,9/1/2021,Projects|Lectures
+University of Illinois Urbana-Champaign,Henry,Brown,CS101,Intro to Computer Science,CS,Great lectures and helpful projects.,4,5,5/10/2024,Workload|Exams|Projects
+University of Illinois Urbana-Champaign,Henry,Brown,CS101,Intro to Computer Science,CS,Great lectures and helpful projects. Professor Brown is very engaging.,5,5,9/1/2021,Projects|Lectures
+University of Illinois Urbana-Champaign,Henry,Brown,CS101,Intro to Computer Science,CS,Difficult course overall. Great lectures and helpful projects.,3,5,1/20/2023,Grading|Exams|Workload
+University of Illinois Urbana-Champaign,Alice,Chen,CS201,Data Structures,CS,Challenging assignments but fair exams.,5,2,9/1/2021,Projects|Lectures
+University of Illinois Urbana-Champaign,Alice,Chen,CS201,Data Structures,CS,Challenging assignments but fair exams. Professor Chen is very engaging.,3,2,1/20/2023,Grading|Exams|Workload
+University of Illinois Urbana-Champaign,Alice,Chen,CS201,Data Structures,CS,Difficult course overall. Challenging assignments but fair exams.,4,2,3/15/2023,Projects|Workload|Exams
+University of Illinois Urbana-Champaign,Bob,Rivera,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms.,3,3,1/20/2023,Grading|Exams|Workload
+University of Illinois Urbana-Champaign,Bob,Rivera,CS501,Advanced Machine Learning,CS,Amazing projects but heavy workload near midterms. Professor Rivera is very engaging.,4,3,3/15/2023,Projects|Workload|Exams
+University of Illinois Urbana-Champaign,Bob,Rivera,CS501,Advanced Machine Learning,CS,Difficult course overall. Amazing projects but heavy workload near midterms.,5,3,11/2/2022,Lectures|Grading|Assignments
+University of Illinois Urbana-Champaign,Carol,Wu,EE210,Circuits I,EE,Clear explanations and practical labs.,4,4,3/15/2023,Projects|Workload|Exams
+University of Illinois Urbana-Champaign,Carol,Wu,EE210,Circuits I,EE,Clear explanations and practical labs. Professor Wu is very engaging.,5,4,11/2/2022,Lectures|Grading|Assignments
+University of Illinois Urbana-Champaign,Carol,Wu,EE210,Circuits I,EE,Difficult course overall. Clear explanations and practical labs.,3,4,5/10/2024,Workload|Exams|Projects
+University of Illinois Urbana-Champaign,David,Smith,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework.,5,5,11/2/2022,Lectures|Grading|Assignments
+University of Illinois Urbana-Champaign,David,Smith,MATH301,Linear Algebra,MATH,Fast paced lectures with tough homework. Professor Smith is very engaging.,3,5,5/10/2024,Workload|Exams|Projects
+University of Illinois Urbana-Champaign,David,Smith,MATH301,Linear Algebra,MATH,Difficult course overall. Fast paced lectures with tough homework.,4,5,9/1/2021,Projects|Lectures
+University of Illinois Urbana-Champaign,Elena,Park,DS501,Applied Data Science,DS,Engaging real-world datasets and projects.,3,2,5/10/2024,Workload|Exams|Projects
+University of Illinois Urbana-Champaign,Elena,Park,DS501,Applied Data Science,DS,Engaging real-world datasets and projects. Professor Park is very engaging.,4,2,9/1/2021,Projects|Lectures
+University of Illinois Urbana-Champaign,Elena,Park,DS501,Applied Data Science,DS,Difficult course overall. Engaging real-world datasets and projects.,5,2,1/20/2023,Grading|Exams|Workload

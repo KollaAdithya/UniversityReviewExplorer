@@ -1,0 +1,18 @@
+course_code,course_name,department,credits,professor_name,professor_email,semester,year,rating,review_text
+CS101,Introduction to Computer Science,Computer Science,3,Dr. Alice Chen,alice.chen@campus.edu,Fall,2024,5,Great intro course with clear lectures and helpful TAs.
+CS101,Introduction to Computer Science,Computer Science,3,Dr. Alice Chen,alice.chen@campus.edu,Fall,2024,4,Good foundation but assignments can feel repetitive.
+CS101,Introduction to Computer Science,Computer Science,3,Dr. Bob Rivera,bob.rivera@campus.edu,Spring,2025,3,Decent course overall with a manageable workload.
+CS201,Data Structures,Computer Science,3,Dr. Bob Rivera,bob.rivera@campus.edu,Fall,2024,5,Excellent projects that made concepts click.
+CS201,Data Structures,Computer Science,3,Dr. Bob Rivera,bob.rivera@campus.edu,Fall,2024,2,Exams were very difficult and grading felt harsh.
+CS201,Data Structures,Computer Science,3,Dr. Carol Wu,carol.wu@campus.edu,Spring,2025,4,Challenging but fair with good office hours.
+CS501,Advanced Machine Learning,Computer Science,3,Dr. Smith,smith@campus.edu,Fall,2024,5,Amazing hands-on projects and practical learning.
+CS501,Advanced Machine Learning,Computer Science,3,Dr. Smith,smith@campus.edu,Fall,2024,3,Workload was heavy during midterm and final exam weeks.
+CS501,Advanced Machine Learning,Computer Science,3,Dr. Smith,smith@campus.edu,Spring,2025,4,Great lectures but assignments demand significant time.
+CS501,Advanced Machine Learning,Computer Science,3,Dr. Smith,smith@campus.edu,Spring,2025,2,Grading rubric was confusing and project expectations unclear.
+DS501,Applied Data Science,Data Science,3,Dr. Priya Nair,priya.nair@campus.edu,Fall,2024,5,Projects were excellent and very relevant to industry.
+DS501,Applied Data Science,Data Science,3,Dr. Priya Nair,priya.nair@campus.edu,Fall,2024,4,Engaging lectures with useful real-world datasets.
+DS501,Applied Data Science,Data Science,3,Dr. James Lee,james.lee@campus.edu,Spring,2025,3,Good content but workload spikes near exams.
+MATH301,Linear Algebra,Mathematics,4,Dr. Elena Park,elena.park@campus.edu,Fall,2024,4,Clear explanations and helpful homework problems.
+MATH301,Linear Algebra,Mathematics,4,Dr. Elena Park,elena.park@campus.edu,Fall,2024,2,Exams were stressful and lectures moved too fast.
+EE210,Circuits I,Electrical Engineering,4,Dr. Omar Hassan,omar.hassan@campus.edu,Spring,2025,5,Professor explains concepts clearly and labs are practical.
+EE210,Circuits I,Electrical Engineering,4,Dr. Omar Hassan,omar.hassan@campus.edu,Spring,2025,3,Assignments are time-consuming but fair.
