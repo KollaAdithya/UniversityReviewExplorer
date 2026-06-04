@@ -13,7 +13,13 @@ class Settings(BaseSettings):
     environment: str = "local"
     use_mock_ml: bool = True
     enable_bigquery: bool = False
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5174"
+
+    auth_required: bool = True
+    firebase_project_id: str = "course-review-explorer-demo"
+    firebase_auth_emulator_host: str = "127.0.0.1:9099"
+    firebase_credentials_path: str = ""
+    auth_dev_token: str = "local-dev-verifier-token"
 
     gcp_project: str = ""
     gcp_region: str = "us-central1"

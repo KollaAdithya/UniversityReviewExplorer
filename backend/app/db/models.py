@@ -2,11 +2,24 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+
+class AppUser(Base):
+    __tablename__ = "app_user"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    firebase_uid: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(100), nullable=False, default="Student")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    reviews: Mapped[list["Review"]] = relationship(back_populates="author")
 
 
 class University(Base):
@@ -69,11 +82,13 @@ class Review(Base):
 
     review_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     offering_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("course_offering.offering_id"), nullable=False)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid, ForeignKey("app_user.user_id"), nullable=True)
     review_text: Mapped[str] = mapped_column(Text, nullable=False)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     offering: Mapped["CourseOffering"] = relationship(back_populates="reviews")
+    author: Mapped["AppUser | None"] = relationship(back_populates="reviews")
     sentiment: Mapped["SentimentAnalysis | None"] = relationship(back_populates="review", uselist=False)
     topics: Mapped[list["TopicAnalysis"]] = relationship(back_populates="review")
 

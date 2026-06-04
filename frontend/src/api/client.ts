@@ -1,8 +1,24 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
+let authTokenGetter: (() => Promise<string | null>) | null = null;
+
+export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null) {
+  authTokenGetter = getter;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  if (authTokenGetter) {
+    const token = await authTokenGetter();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options?.headers || {}) },
+    headers,
     ...options,
   });
   if (!response.ok) {
@@ -71,7 +87,15 @@ export interface UniversityTopicAnalytics {
   topics: TopTopicItem[];
 }
 
+export interface AuthMe {
+  authenticated: boolean;
+  user_id?: string;
+  email?: string;
+  display_name?: string;
+}
+
 export const api = {
+  getMe: () => request<AuthMe>("/api/v1/auth/me"),
   listUniversities: (q?: string) =>
     request<University[]>(`/api/v1/universities${q ? `?q=${encodeURIComponent(q)}` : ""}`),
   getUniversity: (universityId: string) =>

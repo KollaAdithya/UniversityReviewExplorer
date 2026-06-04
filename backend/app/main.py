@@ -1,10 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth.firebase_admin import init_firebase
 from app.config import settings
-from app.routers import analytics, courses, reviews, universities
+from app.routers import analytics, auth, courses, reviews, universities
 
 app = FastAPI(title="Campus Course Review Explorer", version="2.0.0")
+
+
+@app.on_event("startup")
+def startup():
+    init_firebase()
 
 app.add_middleware(
     CORSMiddleware,
@@ -14,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(universities.router)
 app.include_router(analytics.router)
 app.include_router(courses.router)
@@ -27,4 +34,6 @@ def health():
         "environment": settings.environment,
         "use_mock_ml": settings.use_mock_ml,
         "multi_university": True,
+        "auth_required": settings.auth_required,
+        "firebase_project_id": settings.firebase_project_id or None,
     }

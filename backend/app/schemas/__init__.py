@@ -102,3 +102,10 @@ class UniversityTopicAnalyticsResponse(BaseModel):
 class SentimentResult(BaseModel):
     sentiment: str
     confidence: float
+
+
+class UserResponse(BaseModel):
+    authenticated: bool
+    user_id: Optional[UUID] = None
+    email: Optional[str] = None
+    display_name: Optional[str] = None

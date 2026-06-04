@@ -7,7 +7,8 @@ Local-first platform for exploring course reviews across universities with AI-po
 - **Frontend:** React + Vite + Tailwind + Recharts
 - **Backend:** FastAPI + SQLAlchemy + Alembic
 - **Database:** SQLite locally (Docker Postgres optional)
-- **Data:** Public RMP-style research subset in [`data/rmp_subset.csv`](data/rmp_subset.csv)
+- **Auth:** Firebase Authentication (local Auth Emulator; production-ready token verification)
+- **Data:** Real public RMP research sample ([`data/rmp_public.csv`](data/rmp_public.csv), ~1k reviews / 46 schools)
 - **ML:** Mock NLP locally; Vertex AI Gemini on GCP
 - **Analytics:** BigQuery-ready cross-university topic analytics
 
@@ -29,6 +30,15 @@ cd frontend && npm install && npm run dev -- --port 5174
 
 Open http://127.0.0.1:5174
 
+### Authentication
+
+- **Browse** universities, courses, analytics, and reviews without signing in.
+- **Submit reviews** requires Firebase sign-in (`/login`).
+- Local dev uses the [Firebase Auth Emulator](https://firebase.google.com/docs/emulator-suite) on port `9099` (any email/password works).
+- Automated checks use `AUTH_DEV_TOKEN` from `.env.example`.
+
+Install the emulator CLI once: `npm install -g firebase-tools`
+
 ## API endpoints
 
 | Method | Path | Description |
@@ -38,18 +48,26 @@ Open http://127.0.0.1:5174
 | GET | `/api/v1/universities/{id}/courses/{courseId}/analytics` | Dashboard metrics |
 | GET | `/api/v1/universities/{id}/courses/{courseId}/reviews` | Filterable reviews |
 | GET | `/api/v1/analytics/top-topics` | Cross-university topic comparison |
-| POST | `/api/v1/reviews` | Submit review + ML pipeline |
+| GET | `/api/v1/auth/me` | Current user (Bearer token) |
+| POST | `/api/v1/reviews` | Submit review + ML pipeline (auth required) |
 
 Legacy `/api/v1/courses` remains for backward compatibility.
 
-## Data source
+## Data source (real, not synthetic)
 
-The demo subset in `data/rmp_subset.csv` is modeled after public Rate My Professors research datasets ([Mendeley corpus](https://data.mendeley.com/datasets/fvtfjyvw7d/2)). It covers MIT, Stanford, Berkeley, CMU, Harvard, Georgia Tech, Michigan, and UIUC.
+Imports use **freely available** research datasets only. See [`data/DATA_SOURCES.md`](data/DATA_SOURCES.md).
 
-To load the full public dataset, replace `data/rmp_subset.csv` and rerun:
+**Default (~1,000 real reviews):** downloaded from [liumingchun/RateMyProfessor](https://github.com/liumingchun/RateMyProfessor/blob/master/RMP_sample_data.csv) — 46 US colleges, real comments and ratings.
 
 ```bash
-python scripts/import_rmp_subset.py
+python scripts/download_public_data.py
+python scripts/import_public_data.py --file data/rmp_public.csv --force
+```
+
+**Large corpus (optional, CC BY 4.0):** download from [Mendeley — RateMyProfessor Big Data Set](https://data.mendeley.com/datasets/fvtfjyvw7d/2) (~9.5M rows), then:
+
+```bash
+python scripts/import_public_data.py --file data/your_mendeley_file.csv --force --max-rows 50000
 ```
 
 ## GCP deployment (Stage 2)

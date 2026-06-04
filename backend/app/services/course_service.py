@@ -197,7 +197,14 @@ class ReviewService:
             )
         return results
 
-    def create_review(self, db: Session, offering_id: UUID, rating: int, review_text: str) -> Review:
+    def create_review(
+        self,
+        db: Session,
+        offering_id: UUID,
+        rating: int,
+        review_text: str,
+        user_id: UUID | None = None,
+    ) -> Review:
         offering = (
             db.query(CourseOffering)
             .options(joinedload(CourseOffering.course).joinedload(Course.university))
@@ -207,7 +214,12 @@ class ReviewService:
         if not offering:
             raise ValueError("Offering not found")
 
-        review = Review(offering_id=offering_id, rating=rating, review_text=review_text)
+        review = Review(
+            offering_id=offering_id,
+            rating=rating,
+            review_text=review_text,
+            user_id=user_id,
+        )
         db.add(review)
         db.flush()
 

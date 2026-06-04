@@ -6,11 +6,14 @@ import {
   type Offering,
   type Review,
 } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { RequireAuth } from "../components/RequireAuth";
 import { ReviewCard } from "../components/ReviewCard";
 import { SentimentChart } from "../components/SentimentChart";
 import { TopicList } from "../components/TopicList";
 
 export function DashboardPage() {
+  const { user } = useAuth();
   const { uniId, courseId } = useParams<{ uniId: string; courseId: string }>();
   const [analytics, setAnalytics] = useState<CourseAnalytics | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -54,7 +57,7 @@ export function DashboardPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!offeringId || !reviewText.trim()) return;
+    if (!user || !offeringId || !reviewText.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
@@ -158,6 +161,7 @@ export function DashboardPage() {
 
       <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold">Submit a Review</h2>
+        <RequireAuth>
         <form onSubmit={handleSubmit} className="space-y-4">
           <select
             value={offeringId}
@@ -198,6 +202,7 @@ export function DashboardPage() {
             {submitting ? "Submitting..." : "Submit Review"}
           </button>
         </form>
+        </RequireAuth>
       </section>
     </div>
   );

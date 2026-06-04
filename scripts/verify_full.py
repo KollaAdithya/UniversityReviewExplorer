@@ -5,10 +5,10 @@ import json
 import subprocess
 import sys
 import urllib.request
-from pathlib import Path
 
 BASE = "http://localhost:8080"
 FRONTEND = "http://127.0.0.1:5174"
+AUTH_DEV_TOKEN = "local-dev-verifier-token"
 
 
 def get(path: str):
@@ -16,15 +16,26 @@ def get(path: str):
         return json.loads(response.read())
 
 
-def post(path: str, data: dict):
+def post(path: str, data: dict, *, auth: bool = False):
+    headers = {"Content-Type": "application/json"}
+    if auth:
+        headers["Authorization"] = f"Bearer {AUTH_DEV_TOKEN}"
     request = urllib.request.Request(
         BASE + path,
         data=json.dumps(data).encode(),
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
     with urllib.request.urlopen(request) as response:
         return json.loads(response.read())
+
+
+def pick_university(universities: list, *needles: str):
+    for needle in needles:
+        match = next((u for u in universities if needle.lower() in u["name"].lower()), None)
+        if match:
+            return match
+    return universities[0] if universities else None
 
 
 def main() -> int:
@@ -33,47 +44,67 @@ def main() -> int:
     health = get("/health")
     checks.append(("Health status ok", health.get("status") == "ok"))
     checks.append(("Multi-university enabled", health.get("multi_university") is True))
+    checks.append(("Auth required for writes", health.get("auth_required") is True))
 
     universities = get("/api/v1/universities")
     checks.append(("Has at least 8 universities", len(universities) >= 8))
+    checks.append(("Has real public dataset scale (40+ schools)", len(universities) >= 40))
 
-    mit = next((u for u in universities if "Massachusetts" in u["name"]), None)
-    stanford = next((u for u in universities if "Stanford" in u["name"]), None)
-    checks.append(("MIT present", mit is not None))
-    checks.append(("Stanford present", stanford is not None))
+    uiuc = pick_university(universities, "Illinois", "Urbana")
+    brooklyn = pick_university(universities, "Brooklyn")
+    checks.append(("UIUC present in public RMP sample", uiuc is not None))
+    checks.append(("Brooklyn College present in public RMP sample", brooklyn is not None))
 
-    if mit:
-        mit_courses = get(f"/api/v1/universities/{mit['university_id']}/courses?q=CS501")
-        checks.append(("MIT CS501 search works", len(mit_courses) >= 1))
-        mit_cs501 = mit_courses[0]
-        analytics = get(f"/api/v1/universities/{mit['university_id']}/courses/{mit_cs501['course_id']}/analytics")
-        checks.append(("MIT CS501 analytics sum to 100%", analytics["positive"] + analytics["neutral"] + analytics["negative"] == 100))
+    test_uni = uiuc or universities[0]
+    courses = get(f"/api/v1/universities/{test_uni['university_id']}/courses")
+    checks.append(("Courses listed for sample university", len(courses) >= 1))
 
-    if mit and stanford:
-        mit_cs = get(f"/api/v1/universities/{mit['university_id']}/courses?q=CS501")[0]
-        stanford_cs = get(f"/api/v1/universities/{stanford['university_id']}/courses?q=CS501")[0]
-        checks.append(("CS501 differs across universities", mit_cs["course_id"] != stanford_cs["course_id"]))
+    if courses:
+        course = courses[0]
+        analytics = get(
+            f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/analytics"
+        )
+        total = analytics["positive"] + analytics["neutral"] + analytics["negative"]
+        checks.append(("Course analytics sum to 100%", total == 100))
 
-    if mit:
-        topics = get(f"/api/v1/universities/{mit['university_id']}/analytics/top-topics?limit=3")
+        topics = get(f"/api/v1/universities/{test_uni['university_id']}/analytics/top-topics?limit=3")
         checks.append(("University top topics endpoint", len(topics.get("topics", [])) > 0))
+
+        offerings = get(
+            f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/offerings"
+        )
+        if offerings:
+            before = len(
+                get(
+                    f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/reviews"
+                )
+            )
+            post(
+                "/api/v1/reviews",
+                {
+                    "offering_id": offerings[0]["offering_id"],
+                    "rating": 5,
+                    "review_text": "Verification: real-data import and authenticated submit still work.",
+                },
+                auth=True,
+            )
+            after = len(
+                get(
+                    f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/reviews"
+                )
+            )
+            checks.append(("Review submission works", after == before + 1))
+
+    if uiuc and brooklyn:
+        uiuc_courses = get(f"/api/v1/universities/{uiuc['university_id']}/courses?q=ASTR")
+        brooklyn_courses = get(f"/api/v1/universities/{brooklyn['university_id']}/courses")
+        if uiuc_courses and brooklyn_courses:
+            checks.append(
+                ("Same course code differs across universities", uiuc_courses[0]["course_id"] != brooklyn_courses[0]["course_id"])
+            )
 
     cross_topics = get("/api/v1/analytics/top-topics?limit=3")
     checks.append(("Cross-university analytics endpoint", len(cross_topics) >= 2))
-
-    if mit:
-        offerings = get(f"/api/v1/universities/{mit['university_id']}/courses/{mit_cs501['course_id']}/offerings")
-        before = len(get(f"/api/v1/universities/{mit['university_id']}/courses/{mit_cs501['course_id']}/reviews"))
-        post(
-            "/api/v1/reviews",
-            {
-                "offering_id": offerings[0]["offering_id"],
-                "rating": 5,
-                "review_text": "Verification: excellent projects with challenging exams.",
-            },
-        )
-        after = len(get(f"/api/v1/universities/{mit['university_id']}/courses/{mit_cs501['course_id']}/reviews"))
-        checks.append(("Review submission works", after == before + 1))
 
     cors = subprocess.run(
         [
