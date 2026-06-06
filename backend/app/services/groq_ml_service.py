@@ -120,9 +120,10 @@ def generate_summary(
     joined = "\n".join(f"- {text}" for text in review_texts[:20])
 
     prompt = (
-        "You help students choose university courses. Write a concise summary (under 100 words) "
-        "based on these student reviews. Mention overall sentiment, workload, grading, lectures, "
-        "and any recurring strengths or concerns. Be specific and helpful.\n\n"
+        "You help students choose university courses. Summarize these student reviews as "
+        "4-6 concise bullet points. Start EACH bullet with '- ' on its own line. "
+        "Cover overall sentiment, workload, grading, lectures, and recurring strengths or concerns. "
+        "Keep each bullet under 20 words. Do NOT add a heading, intro, or closing line.\n\n"
         f"Approximate sentiment: {pos_pct}% positive, {neu_pct}% neutral, {neg_pct}% negative.\n"
         f"Common topics: {topics_text}.\n\n"
         f"Reviews:\n{joined}"

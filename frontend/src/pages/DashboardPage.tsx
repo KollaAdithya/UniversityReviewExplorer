@@ -55,7 +55,7 @@ export function DashboardPage() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summarySource, setSummarySource] = useState<string | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [summaryProvider, setSummaryProvider] = useState<SummaryProvider>("openai");
+  const [summaryProvider, setSummaryProvider] = useState<SummaryProvider>("ollama");
   const [summaryProviders, setSummaryProviders] = useState<
     Record<SummaryProvider, SummaryProviderInfo> | null
   >(null);
@@ -253,7 +253,13 @@ export function DashboardPage() {
             className="select-field max-w-md"
             disabled={summaryLoading}
           >
-            <option value="default">Default — fast template</option>
+            <option value="ollama" disabled={summaryProviders?.ollama?.available === false}>
+              {summaryProviderLabel(
+                "Ollama (local)",
+                summaryProviders?.ollama?.model,
+                summaryProviders?.ollama?.available === false ? " (not running)" : undefined,
+              )}
+            </option>
             <option value="openai" disabled={summaryProviders?.openai?.available === false}>
               {summaryProviderLabel(
                 "OpenAI",
@@ -268,13 +274,7 @@ export function DashboardPage() {
                 summaryProviders?.groq?.available === false ? " (needs API key)" : undefined,
               )}
             </option>
-            <option value="ollama" disabled={summaryProviders?.ollama?.available === false}>
-              {summaryProviderLabel(
-                "Ollama",
-                summaryProviders?.ollama?.model,
-                summaryProviders?.ollama?.available === false ? " (not running)" : undefined,
-              )}
-            </option>
+            <option value="default">Default — fast template</option>
           </select>
         </div>
         {summaryLoading ? (
@@ -284,7 +284,29 @@ export function DashboardPage() {
             <div className="loading-pulse h-4 w-4/6" />
           </div>
         ) : (
-          <div className="summary-callout border-l-4 border-l-brand-500">{analytics.summary}</div>
+          (() => {
+            const points = analytics.summary
+              .split("\n")
+              .map((line) => line.replace(/^[\s\-*•]+/, "").trim())
+              .filter(Boolean);
+            const isList = points.length > 1;
+            return (
+              <div className="summary-callout border-l-4 border-l-brand-500">
+                {isList ? (
+                  <ul className="space-y-2">
+                    {points.map((point, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="mt-1 text-brand-400">▸</span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  analytics.summary
+                )}
+              </div>
+            );
+          })()
         )}
         <div className="mt-5">
           <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-400">Top topic tags</h3>

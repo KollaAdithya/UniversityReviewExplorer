@@ -74,8 +74,11 @@ def generate_summary(review_texts: list[str], positive: int, neutral: int, negat
     else:
         tone = "Student opinions are mixed for this course"
 
-    return (
-        f"{tone}. Common discussion themes include {topics_text}. "
-        f"Based on {total} reviews, sentiment is roughly {positive_pct}% positive, "
-        f"{neutral_pct}% neutral, and {negative_pct}% negative."
+    return "\n".join(
+        [
+            f"- {tone}",
+            f"- Common discussion themes: {topics_text}",
+            f"- Based on {total} reviews from students",
+            f"- Sentiment: {positive_pct}% positive, {neutral_pct}% neutral, {negative_pct}% negative",
+        ]
     )
