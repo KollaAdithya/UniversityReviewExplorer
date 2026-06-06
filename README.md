@@ -1,4 +1,4 @@
-# Multi-University Course Review Explorer
+# Campus Course Review — Sentiment & Topic Explorer
 
 Local-first platform for exploring course reviews across universities with AI-powered sentiment, topics, and summaries.
 
@@ -9,26 +9,116 @@ Local-first platform for exploring course reviews across universities with AI-po
 - **Database:** SQLite locally (Docker Postgres optional)
 - **Auth:** Firebase Authentication (local Auth Emulator; production-ready token verification)
 - **Data:** Real public RMP research sample ([`data/rmp_public.csv`](data/rmp_public.csv), ~1k reviews / 46 schools)
-- **ML:** Mock NLP for bulk import; **Groq (cloud Llama)** for live reviews + summaries; optional local Ollama; Vertex AI Gemini on GCP
+- **ML:** Mock NLP for bulk import; live AI summaries/sentiment via **Ollama (local)**, **OpenAI**, or **Groq**
 - **Analytics:** BigQuery-ready cross-university topic analytics
 
-## Run locally
+---
+
+## Getting started (run locally)
+
+Anyone can run this app on their own machine in a few minutes. Follow the steps below.
+
+### 1. Prerequisites
+
+Install these once:
+
+| Tool | Version | Check | Get it |
+|------|---------|-------|--------|
+| **Python** | 3.9+ | `python3 --version` | https://www.python.org/downloads/ |
+| **Node.js + npm** | 18+ | `node -v` / `npm -v` | https://nodejs.org/ |
+| **Git** | any | `git --version` | https://git-scm.com/ |
+
+Optional (only if you want those features):
+
+- **Firebase CLI** — for the login/sign-in feature: `npm install -g firebase-tools`
+- **Ollama** — to run a local AI model: https://ollama.com/download
+
+### 2. Get the code
 
 ```bash
-chmod +x scripts/dev-local.sh scripts/verify_full.sh scripts/setup-gcp.sh
-./scripts/dev-local.sh
-
-# Backend
-cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8080
-
-# Frontend
-cd frontend && npm install && npm run dev -- --port 5174
-
-# Verify
-./scripts/verify_full.py
+git clone <your-repo-url> appgroup
+cd appgroup
 ```
 
-Open http://127.0.0.1:5174
+### 3. Start the backend (API)
+
+```bash
+cd backend
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create local config
+cp .env.example .env
+
+# Create the database and load ~1,000 real reviews
+python ../scripts/init_db.py
+python ../scripts/import_public_data.py --file ../data/rmp_public.csv --force
+
+# Run the API (keep this terminal open)
+uvicorn app.main:app --reload --port 8080
+```
+
+Backend is now at **http://localhost:8080** (docs at http://localhost:8080/docs).
+
+### 4. Start the frontend (in a second terminal)
+
+```bash
+cd frontend
+
+# Create local config
+cp .env.example .env.local
+
+# Install dependencies and run
+npm install
+npm run dev -- --port 5174
+```
+
+Open **http://localhost:5174** in your browser. 🎉
+
+### 5. (Optional) Enable login to submit reviews
+
+Browsing works without signing in. To **submit** a review you need the Firebase Auth Emulator:
+
+```bash
+npm install -g firebase-tools      # once
+./scripts/start-firebase-emulator.sh
+```
+
+Then sign in at `/login` with any email/password (the emulator accepts anything locally).
+
+### One-command setup (macOS/Linux)
+
+If you have `bash`, this script does steps 3–5 for you:
+
+```bash
+chmod +x scripts/dev-local.sh
+./scripts/dev-local.sh
+# then start backend and frontend as printed at the end
+```
+
+### Verify everything works
+
+With the backend, frontend, and emulator running:
+
+```bash
+cd backend && source .venv/bin/activate
+python ../scripts/verify_full.py
+```
+
+You should see all checks pass.
+
+### Troubleshooting
+
+- **`command not found: python`** → use `python3`.
+- **Port already in use** → kill it: `lsof -ti tcp:8080 | xargs kill -9` (or `:5174`).
+- **Frontend can't reach API** → confirm the backend is running on `:8080` and `frontend/.env.local` has `VITE_API_BASE_URL=http://localhost:8080`.
+- **AI summary shows "Default — fast template"** → no AI provider is configured/running; that's fine, it falls back to a template. See the AI section below to enable Ollama/OpenAI/Groq.
+- **Login fails** → make sure the Firebase emulator is running (step 5).
 
 ### Authentication
 
@@ -39,49 +129,44 @@ Open http://127.0.0.1:5174
 
 Install the emulator CLI once: `npm install -g firebase-tools`
 
-### AI / Llama (sentiment + summaries)
+### AI summaries (optional)
 
-You do **not** have to run a model locally. Pick a provider in `backend/.env`:
+The app works without any AI — it falls back to a fast keyword template. To get **AI-written summaries**, the course dashboard has a **Summary model** dropdown where you pick a provider at runtime:
 
-| Provider | Cost | Setup |
-|----------|------|-------|
-| **`openai`** | Pay-as-you-go (e.g. $10 credits) | [OpenAI API key](https://platform.openai.com/) — GPT summaries |
-| **`groq`** (free cloud Llama) | Free tier, rate-limited | [Groq API key](https://console.groq.com/) — no local install |
-| **`ollama`** | Free | Install Ollama, runs Llama on your Mac |
-| **`vertex`** | GCP billing / credits | `USE_MOCK_ML=false` + `GCP_PROJECT` |
-| **`mock`** | Free | Default — keyword rules, no AI |
+| Option | Cost | Setup |
+|--------|------|-------|
+| **Ollama (local)** — default | Free | Install [Ollama](https://ollama.com/download), runs Llama on your machine |
+| **OpenAI** | Pay-as-you-go | [OpenAI API key](https://platform.openai.com/) in `backend/.env` |
+| **Groq** | Free tier | [Groq API key](https://console.groq.com/) in `backend/.env` |
+| **Default** | Free | Keyword template, no AI |
 
-#### Option A — Groq cloud API (no local model)
+A provider only appears as available when it's configured/running; otherwise it's disabled and the app uses the template.
+
+#### Use local Ollama (default, free)
 
 ```bash
-# backend/.env
-ML_PROVIDER=groq
-GROQ_API_KEY=gsk_...          # https://console.groq.com/keys
+./scripts/start-ollama.sh        # installs/pulls the model and starts Ollama
+```
+
+Then choose **Ollama (local)** in the dropdown. No API key needed.
+
+#### Use OpenAI or Groq (cloud)
+
+Add a key to `backend/.env` and restart the backend:
+
+```bash
+# backend/.env — for OpenAI
+OPENAI_API_KEY=sk-...            # https://platform.openai.com/api-keys
+OPENAI_MODEL=gpt-4o-mini
+
+# or for Groq
+GROQ_API_KEY=gsk_...             # https://console.groq.com/keys
 GROQ_MODEL=llama-3.1-8b-instant
-OLLAMA_LIVE_REVIEWS_ONLY=true # also applies to Groq: mock bulk import, LLM for live reviews
-USE_MOCK_ML=true
 ```
 
-Restart the backend. Dashboard summaries call Groq automatically; no Ollama app needed.
+The `ML_PROVIDER` value in `backend/.env` controls which provider analyzes **newly submitted** reviews (sentiment + topics). The dashboard dropdown controls **summaries** per-course.
 
-#### Option B — Local Ollama
-
-```bash
-./scripts/start-ollama.sh
-
-# backend/.env
-ML_PROVIDER=ollama
-OLLAMA_MODEL=llama3.2:3b
-OLLAMA_LIVE_REVIEWS_ONLY=true
-USE_MOCK_ML=true
-```
-
-```bash
-python scripts/test_ollama_review.py
-python scripts/refresh_summaries.py
-```
-
-If the LLM provider is offline or missing an API key, the API **falls back to mock** NLP automatically.
+If a provider is offline or missing a key, the API **falls back to the template** automatically.
 
 ## API endpoints
 
@@ -134,7 +219,7 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and add yo
 
 **Never commit real API keys.** Local secrets live only in:
 
-- `backend/.env` — `GROQ_API_KEY`, `AUTH_DEV_TOKEN`, GCP credentials path
+- `backend/.env` — `OPENAI_API_KEY`, `GROQ_API_KEY`, `AUTH_DEV_TOKEN`, GCP credentials path
 - `frontend/.env.local` — Firebase config (demo keys OK for emulator)
 
 Tracked templates (safe to push): `backend/.env.example`, `.env.example`, `frontend/.env.example`.
