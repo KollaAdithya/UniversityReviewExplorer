@@ -5,42 +5,44 @@ interface Props {
   topTopic: string;
 }
 
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: string;
+}) {
+  return (
+    <div className="stat-card">
+      <p className="text-xs font-bold uppercase tracking-wider text-ink-400">{label}</p>
+      <p className="mt-2 font-display text-3xl font-bold tracking-tight" style={{ color: accent ?? "#1c2029" }}>
+        {value}
+      </p>
+      {sub && <p className="mt-1 text-xs text-ink-500">{sub}</p>}
+    </div>
+  );
+}
+
 export function KpiCards({ totalReviews, avgRating, sentimentScore, topTopic }: Props) {
   const sentColor =
-    sentimentScore >= 0.05 ? "#27AE60" : sentimentScore <= -0.05 ? "#E74C3C" : "#F39C12";
-  const stars = "⭐".repeat(Math.max(1, Math.round(avgRating)));
+    sentimentScore >= 0.05 ? "#16a34a" : sentimentScore <= -0.05 ? "#dc2626" : "#d97706";
+  const stars = "★".repeat(Math.max(1, Math.round(avgRating))) + "☆".repeat(5 - Math.max(1, Math.round(avgRating)));
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-        <p className="text-3xl font-extrabold text-slate-800">{totalReviews}</p>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Total Reviews
-        </p>
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-        <p className="text-3xl font-extrabold text-slate-800">{avgRating.toFixed(2)}</p>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Avg Rating
-        </p>
-        <p className="mt-1 text-sm text-slate-400">{stars}</p>
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-        <p className="text-3xl font-extrabold" style={{ color: sentColor }}>
-          {sentimentScore >= 0 ? "+" : ""}
-          {sentimentScore.toFixed(3)}
-        </p>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Sentiment Score
-        </p>
-        <p className="mt-1 text-xs text-slate-400">−1 to +1 scale</p>
-      </div>
-      <div className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
-        <p className="text-lg font-extrabold text-indigo-700">{topTopic}</p>
-        <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Top Topic
-        </p>
-      </div>
+      <StatCard label="Total reviews" value={String(totalReviews)} />
+      <StatCard label="Avg rating" value={avgRating.toFixed(2)} sub={stars} />
+      <StatCard
+        label="Sentiment score"
+        value={`${sentimentScore >= 0 ? "+" : ""}${sentimentScore.toFixed(3)}`}
+        sub="−1 to +1 scale"
+        accent={sentColor}
+      />
+      <StatCard label="Top topic" value={topTopic} accent="#3366ff" />
     </div>
   );
 }

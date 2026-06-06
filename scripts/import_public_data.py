@@ -137,10 +137,12 @@ def parse_tags(value: str) -> list[str]:
     if not value or not str(value).strip():
         return []
     cleaned = str(value).replace("[", "").replace("]", "").replace("'", "")
-    parts = re.split(r"[|,]", cleaned)
+    # RMP tags are separated by double spaces, pipes, or commas.
+    parts = re.split(r"[|,]|\s{2,}", cleaned)
     tags = []
     for part in parts:
-        tag = re.sub(r"\s*\(\d+\)\s*", "", part).strip()
+        tag = re.sub(r"\(\d+\)", "", part)
+        tag = re.sub(r"\s+", " ", tag).strip()
         if tag and len(tag) <= 50:
             tags.append(tag[:50])
     return tags[:3]

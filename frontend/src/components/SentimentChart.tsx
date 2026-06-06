@@ -13,7 +13,7 @@ interface Props {
   negative: number;
 }
 
-const COLORS = ["#16a34a", "#64748b", "#dc2626"];
+const COLORS = ["#16a34a", "#d97706", "#dc2626"];
 
 export function SentimentChart({ positive, neutral, negative }: Props) {
   const data = [
@@ -32,16 +32,17 @@ export function SentimentChart({ positive, neutral, negative }: Props) {
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={55}
-            outerRadius={90}
-            label
+            innerRadius={62}
+            outerRadius={96}
+            paddingAngle={3}
+            label={({ name, value }) => `${name} ${value}%`}
           >
             {data.map((_, index) => (
-              <Cell key={index} fill={COLORS[index % COLORS.length]} />
+              <Cell key={index} fill={COLORS[index % COLORS.length]} stroke="#fff" strokeWidth={2} />
             ))}
           </Pie>
           <Tooltip formatter={(value: number) => `${value}%`} />
-          <Legend />
+          <Legend wrapperStyle={{ fontSize: 13 }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

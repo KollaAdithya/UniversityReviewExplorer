@@ -15,10 +15,16 @@ interface Props {
   courses: CourseComparisonItem[];
 }
 
+const TOOLTIP_STYLE = {
+  borderRadius: 12,
+  border: "1px solid #eceef2",
+  boxShadow: "0 8px 24px rgba(28,32,41,0.08)",
+};
+
 export function CourseComparisonChart({ courses }: Props) {
   if (courses.length < 2) {
     return (
-      <p className="text-sm text-slate-500">Select a university with at least two courses to compare.</p>
+      <p className="text-sm text-ink-500">Select a university with at least two courses to compare.</p>
     );
   }
 
@@ -33,38 +39,42 @@ export function CourseComparisonChart({ courses }: Props) {
     <div className="h-96 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="code" tick={{ fontSize: 11 }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#eceef2" vertical={false} />
+          <XAxis dataKey="code" tick={{ fill: "#667690", fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis
             yAxisId="left"
             domain={[-1, 1]}
-            tick={{ fontSize: 11 }}
-            label={{ value: "Sentiment", angle: -90, position: "insideLeft", fontSize: 11 }}
+            tick={{ fill: "#667690", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            label={{ value: "Sentiment", angle: -90, position: "insideLeft", fontSize: 11, fill: "#8593ab" }}
           />
           <YAxis
             yAxisId="right"
             orientation="right"
             domain={[0, 100]}
-            tick={{ fontSize: 11 }}
-            label={{ value: "% Positive", angle: 90, position: "insideRight", fontSize: 11 }}
+            tick={{ fill: "#667690", fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            label={{ value: "% Positive", angle: 90, position: "insideRight", fontSize: 11, fill: "#8593ab" }}
           />
-          <Tooltip />
-          <Legend />
+          <Tooltip contentStyle={TOOLTIP_STYLE} />
+          <Legend wrapperStyle={{ fontSize: 12, color: "#434d61" }} />
           <Bar
             yAxisId="left"
             dataKey="sentiment"
             name="Sentiment score"
-            fill="#2980B9"
-            radius={[4, 4, 0, 0]}
+            fill="#3366ff"
+            radius={[6, 6, 0, 0]}
           />
           <Line
             yAxisId="right"
             type="monotone"
             dataKey="positivePct"
             name="% Positive"
-            stroke="#27AE60"
+            stroke="#16a34a"
             strokeWidth={2}
-            dot={{ r: 4 }}
+            dot={{ r: 4, fill: "#16a34a", strokeWidth: 2, stroke: "#fff" }}
           />
         </ComposedChart>
       </ResponsiveContainer>

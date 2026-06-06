@@ -2,6 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply text-slate-900;
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+  }
+
+  body {
+    @apply min-h-screen font-sans;
+    color: theme("colors.ink.900");
+    background-color: #f4f6fb;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 0% -10%, rgba(51, 102, 255, 0.12), transparent 55%),
+      radial-gradient(ellipse 60% 50% at 100% 0%, rgba(22, 163, 74, 0.07), transparent 50%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(51, 102, 255, 0.05), transparent 55%);
+  }
+
+  ::selection {
+    background-color: theme("colors.brand.200");
+    color: theme("colors.brand.950");
+  }
+}
+
+@layer components {
+  .app-nav {
+    @apply sticky top-0 z-50 border-b border-white/10 bg-brand-950/95 text-white shadow-nav backdrop-blur-md;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-6xl px-4 pb-16 pt-8 sm:px-6 lg:px-8;
+  }
+
+  .hero-panel {
+    @apply relative overflow-hidden rounded-3xl border border-white/60 bg-white/80 p-8 shadow-card backdrop-blur-sm sm:p-10;
+  }
+
+  .hero-panel::before {
+    content: "";
+    @apply pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-400/20 blur-3xl;
+  }
+
+  .section-card {
+    @apply rounded-2xl border border-ink-100/80 bg-white/90 p-6 shadow-card backdrop-blur-sm sm:p-7;
+  }
+
+  .section-title {
+    @apply font-display text-xl font-semibold tracking-tight text-ink-950;
+  }
+
+  .section-subtitle {
+    @apply mt-1 text-sm leading-relaxed text-ink-500;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 shadow-sm transition
+      placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-100;
+  }
+
+  .select-field {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 shadow-sm transition
+      focus:border-brand-400 focus:outline-none focus:ring-4 focus:ring-brand-100;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm
+      transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-xl border border-ink-200 bg-white px-4 py-2 text-sm font-medium text-ink-700
+      transition hover:border-ink-300 hover:bg-ink-50;
+  }
+
+  .stat-card {
+    @apply relative overflow-hidden rounded-2xl border border-ink-100 bg-gradient-to-br from-white to-ink-50/80 p-5 shadow-sm;
+  }
+
+  .stat-card::after {
+    content: "";
+    @apply absolute right-0 top-0 h-16 w-16 rounded-bl-full bg-brand-500/5;
+  }
+
+  .uni-card {
+    @apply relative overflow-hidden rounded-2xl border border-ink-100 bg-white p-5 shadow-card transition
+      hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-card-hover;
+  }
+
+  .uni-card::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 scale-x-0 bg-gradient-to-r from-brand-500 to-brand-400 transition-transform duration-300 group-hover:scale-x-100;
+  }
+
+  .course-card {
+    @apply rounded-2xl border border-ink-100 bg-white p-5 shadow-card transition
+      hover:border-brand-200 hover:shadow-card-hover;
+  }
+
+  .breadcrumb {
+    @apply inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition hover:text-brand-800;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .badge-pos {
+    @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/80;
+  }
+
+  .badge-neu {
+    @apply badge bg-amber-50 text-amber-800 ring-1 ring-amber-200/80;
+  }
+
+  .badge-neg {
+    @apply badge bg-rose-50 text-rose-700 ring-1 ring-rose-200/80;
+  }
+
+  .badge-topic {
+    @apply badge bg-brand-50 text-brand-700 ring-1 ring-brand-200/70;
+  }
+
+  .summary-callout {
+    @apply rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50/80 to-white p-5 text-[0.95rem] leading-relaxed text-ink-800;
+  }
+
+  .review-card {
+    @apply rounded-2xl border border-ink-100 bg-white p-5 shadow-sm transition hover:border-ink-200 hover:shadow-md;
+  }
+
+  .loading-pulse {
+    @apply animate-pulse rounded-2xl bg-ink-100/60;
+  }
 }

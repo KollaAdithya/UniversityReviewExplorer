@@ -7,22 +7,22 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (loading) {
-    return <p className="px-4 py-6 text-slate-500">Loading...</p>;
+    return <p className="text-sm text-ink-500">Checking session…</p>;
   }
 
   if (!user) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-        <p className="font-medium">Sign in required to submit a review</p>
-        <p className="mt-1 text-sm">
-          You can still read all reviews and analytics below.
+      <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-white p-5">
+        <p className="font-semibold text-amber-900">Sign in to submit a review</p>
+        <p className="mt-1 text-sm text-amber-800/80">
+          You can browse all analytics and reviews without an account.
         </p>
         <Link
           to="/login"
           state={{ from: location.pathname }}
-          className="mt-3 inline-block text-sm font-medium text-indigo-700 hover:underline"
+          className="btn-primary mt-4 inline-flex"
         >
-          Sign in or create an account →
+          Sign in or create account
         </Link>
       </div>
     );

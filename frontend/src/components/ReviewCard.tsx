@@ -1,43 +1,38 @@
 import type { Review } from "../api/client";
+import { Badge } from "./ui/Badge";
 
 interface Props {
   review: Review;
 }
 
-const sentimentColors: Record<string, string> = {
-  positive: "bg-green-100 text-green-800",
-  neutral: "bg-slate-100 text-slate-700",
-  negative: "bg-red-100 text-red-800",
-};
+function sentimentVariant(sentiment: string | null): "positive" | "neutral" | "negative" {
+  if (sentiment === "positive") return "positive";
+  if (sentiment === "negative") return "negative";
+  return "neutral";
+}
 
 export function ReviewCard({ review }: Props) {
-  const sentimentClass = review.sentiment
-    ? sentimentColors[review.sentiment] || sentimentColors.neutral
-    : sentimentColors.neutral;
+  const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-        <span className="font-medium text-slate-900">{review.professor_name}</span>
-        <span>•</span>
-        <span>
+    <article className="review-card">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-semibold text-ink-900">{review.professor_name}</span>
+        <span className="text-ink-300">·</span>
+        <span className="text-ink-500">
           {review.semester} {review.year}
         </span>
-        <span>•</span>
-        <span>Rating: {review.rating}/5</span>
-        {review.sentiment && (
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${sentimentClass}`}>
-            {review.sentiment}
-          </span>
-        )}
+        <span className="text-ink-300">·</span>
+        <span className="text-amber-500" title={`${review.rating}/5`}>
+          {stars}
+        </span>
+        {review.sentiment && <Badge label={review.sentiment} variant={sentimentVariant(review.sentiment)} />}
       </div>
-      <p className="text-slate-800">{review.review_text}</p>
+      <p className="text-[0.95rem] leading-relaxed text-ink-800">{review.review_text}</p>
       {review.topics.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           {review.topics.map((topic) => (
-            <span key={topic} className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-              {topic}
-            </span>
+            <Badge key={topic} label={topic} variant="topic" />
           ))}
         </div>
       )}

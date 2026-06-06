@@ -1,33 +1,73 @@
 #!/usr/bin/env python3
-"""Deep verification of multi-university Campus Course Review Explorer."""
+"""Deep end-to-end verification of Campus Course Review Explorer."""
+
+from __future__ import annotations
 
 import json
 import subprocess
 import sys
+import urllib.error
 import urllib.request
+from typing import Optional
 
 BASE = "http://localhost:8080"
 FRONTEND = "http://127.0.0.1:5174"
+FIREBASE_EMULATOR = "http://127.0.0.1:9099"
+FIREBASE_API_KEY = "demo-api-key"
 AUTH_DEV_TOKEN = "local-dev-verifier-token"
 
 
-def get(path: str):
-    with urllib.request.urlopen(BASE + path) as response:
+def get(path: str, *, token: Optional[str] = None):
+    headers = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(BASE + path, headers=headers)
+    with urllib.request.urlopen(request) as response:
         return json.loads(response.read())
 
 
-def post(path: str, data: dict, *, auth: bool = False):
+def post(path: str, data: dict, *, token: Optional[str] = None, expect_status: Optional[int] = None):
     headers = {"Content-Type": "application/json"}
-    if auth:
-        headers["Authorization"] = f"Bearer {AUTH_DEV_TOKEN}"
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(
         BASE + path,
         data=json.dumps(data).encode(),
         headers=headers,
         method="POST",
     )
-    with urllib.request.urlopen(request) as response:
-        return json.loads(response.read())
+    try:
+        with urllib.request.urlopen(request) as response:
+            body = json.loads(response.read())
+            if expect_status is not None and response.status != expect_status:
+                raise AssertionError(f"expected HTTP {expect_status}, got {response.status}")
+            return body, response.status
+    except urllib.error.HTTPError as exc:
+        if expect_status is not None and exc.code == expect_status:
+            return None, exc.code
+        raise
+
+
+def firebase_sign_in(email: str, password: str) -> str:
+    for endpoint in ("signUp", "signInWithPassword"):
+        url = (
+            f"{FIREBASE_EMULATOR}/identitytoolkit.googleapis.com/v1/accounts:{endpoint}"
+            f"?key={FIREBASE_API_KEY}"
+        )
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(
+                {"email": email, "password": password, "returnSecureToken": True}
+            ).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request) as response:
+                return json.loads(response.read())["idToken"]
+        except urllib.error.HTTPError:
+            continue
+    raise RuntimeError("Firebase emulator sign-in failed")
 
 
 def pick_university(universities: list, *needles: str):
@@ -56,55 +96,97 @@ def main() -> int:
     checks.append(("Brooklyn College present in public RMP sample", brooklyn is not None))
 
     test_uni = uiuc or universities[0]
-    courses = get(f"/api/v1/universities/{test_uni['university_id']}/courses")
+    uni_id = test_uni["university_id"]
+    uni_detail = get(f"/api/v1/universities/{uni_id}")
+    checks.append(("University detail endpoint", uni_detail.get("university_id") == uni_id))
+
+    courses = get(f"/api/v1/universities/{uni_id}/courses")
     checks.append(("Courses listed for sample university", len(courses) >= 1))
 
     if courses:
         course = courses[0]
-        analytics = get(
-            f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/analytics"
-        )
+        course_id = course["course_id"]
+        analytics = get(f"/api/v1/universities/{uni_id}/courses/{course_id}/analytics")
         total = analytics["positive"] + analytics["neutral"] + analytics["negative"]
         checks.append(("Course analytics sum to 100%", total == 100))
 
-        topics = get(f"/api/v1/universities/{test_uni['university_id']}/analytics/top-topics?limit=3")
+        topics = get(f"/api/v1/universities/{uni_id}/analytics/top-topics?limit=3")
         checks.append(("University top topics endpoint", len(topics.get("topics", [])) > 0))
 
-        offerings = get(
-            f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/offerings"
-        )
+        trends = get(f"/api/v1/universities/{uni_id}/courses/{course_id}/trends")
+        checks.append(("Semester trends endpoint", isinstance(trends, list)))
+
+        comparison = get(f"/api/v1/universities/{uni_id}/analytics/course-comparison")
+        checks.append(("Course comparison endpoint", len(comparison) >= 1))
+
+        offerings = get(f"/api/v1/universities/{uni_id}/courses/{course_id}/offerings")
         if offerings:
-            before = len(
-                get(
-                    f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/reviews"
-                )
+            before = len(get(f"/api/v1/universities/{uni_id}/courses/{course_id}/reviews"))
+
+            _, unauth_status = post(
+                "/api/v1/reviews",
+                {
+                    "offering_id": offerings[0]["offering_id"],
+                    "rating": 5,
+                    "review_text": "Should be rejected.",
+                },
+                expect_status=401,
             )
+            checks.append(("Unauthenticated review rejected", unauth_status == 401))
+
             post(
                 "/api/v1/reviews",
                 {
                     "offering_id": offerings[0]["offering_id"],
                     "rating": 5,
-                    "review_text": "Verification: real-data import and authenticated submit still work.",
+                    "review_text": "Verification: dev-token authenticated submit works.",
                 },
-                auth=True,
+                token=AUTH_DEV_TOKEN,
             )
-            after = len(
-                get(
-                    f"/api/v1/universities/{test_uni['university_id']}/courses/{course['course_id']}/reviews"
+            after = len(get(f"/api/v1/universities/{uni_id}/courses/{course_id}/reviews"))
+            checks.append(("Review submission with dev token", after == before + 1))
+
+            try:
+                firebase_token = firebase_sign_in("verify-e2e@demo.edu", "demo123456")
+                me = get("/api/v1/auth/me", token=firebase_token)
+                checks.append(
+                    ("Firebase emulator auth accepted", me.get("authenticated") is True),
                 )
-            )
-            checks.append(("Review submission works", after == before + 1))
+                fb_before = len(get(f"/api/v1/universities/{uni_id}/courses/{course_id}/reviews"))
+                post(
+                    "/api/v1/reviews",
+                    {
+                        "offering_id": offerings[0]["offering_id"],
+                        "rating": 4,
+                        "review_text": "Verification: Firebase token submit works.",
+                    },
+                    token=firebase_token,
+                )
+                fb_after = len(get(f"/api/v1/universities/{uni_id}/courses/{course_id}/reviews"))
+                checks.append(("Review submission with Firebase token", fb_after == fb_before + 1))
+            except Exception:
+                checks.append(("Firebase emulator auth accepted", False))
+                checks.append(("Review submission with Firebase token", False))
 
     if uiuc and brooklyn:
         uiuc_courses = get(f"/api/v1/universities/{uiuc['university_id']}/courses?q=ASTR")
         brooklyn_courses = get(f"/api/v1/universities/{brooklyn['university_id']}/courses")
         if uiuc_courses and brooklyn_courses:
             checks.append(
-                ("Same course code differs across universities", uiuc_courses[0]["course_id"] != brooklyn_courses[0]["course_id"])
+                (
+                    "Same course code differs across universities",
+                    uiuc_courses[0]["course_id"] != brooklyn_courses[0]["course_id"],
+                )
             )
 
     cross_topics = get("/api/v1/analytics/top-topics?limit=3")
     checks.append(("Cross-university analytics endpoint", len(cross_topics) >= 2))
+
+    anon_me = get("/api/v1/auth/me")
+    checks.append(("Anonymous auth/me returns unauthenticated", anon_me.get("authenticated") is False))
+
+    dev_me = get("/api/v1/auth/me", token=AUTH_DEV_TOKEN)
+    checks.append(("Dev token auth/me returns authenticated", dev_me.get("authenticated") is True))
 
     cors = subprocess.run(
         [
@@ -123,8 +205,14 @@ def main() -> int:
     )
     checks.append(("Frontend serves UI", frontend_status.stdout.strip() == "200"))
 
+    firebase_status = subprocess.run(
+        ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", FIREBASE_EMULATOR],
+        capture_output=True, text=True,
+    )
+    checks.append(("Firebase auth emulator reachable", firebase_status.stdout.strip() == "200"))
+
     print("=" * 52)
-    print("MULTI-UNIVERSITY VERIFICATION REPORT")
+    print("END-TO-END VERIFICATION REPORT")
     print("=" * 52)
     failed = 0
     for name, ok in checks:

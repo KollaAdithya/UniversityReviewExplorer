@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type Course, type CourseComparisonItem, type University } from "../api/client";
 import { CourseComparisonChart } from "../components/charts/CourseComparisonChart";
+import { PageHero, PageShell, SectionCard } from "../components/ui/PageShell";
 
 export function SearchPage() {
   const { uniId } = useParams<{ uniId: string }>();
@@ -39,37 +40,42 @@ export function SearchPage() {
   }, [uniId, query]);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <Link to="/" className="text-sm text-indigo-600 hover:underline">
-        ← All universities
-      </Link>
-
-      <header className="mt-4 mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">{university?.name ?? "Courses"}</h1>
-        <p className="mt-2 text-slate-600">
-          Search courses and explore sentiment, topics, and AI-generated summaries.
-        </p>
-      </header>
-
+    <PageShell
+      hero={
+        <PageHero
+          eyebrow="University"
+          title={university?.name ?? "Courses"}
+          description="Search courses and open a dashboard with sentiment charts, topic trends, and review explorer."
+        >
+          <Link to="/" className="breadcrumb">
+            ← All universities
+          </Link>
+        </PageHero>
+      }
+    >
       <input
         type="search"
-        placeholder="Search by course code, name, or department..."
+        placeholder="Search by course code, name, or department…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="mb-6 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 shadow-sm focus:border-indigo-500 focus:outline-none"
+        className="input-field mb-8"
       />
 
-      {loading && <p className="text-slate-500">Loading courses...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {loading && <div className="loading-pulse mb-6 h-64" />}
+      {error && (
+        <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
 
       {comparison.length >= 2 && (
-        <section className="mb-10 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Course comparison</h2>
-          <p className="mb-4 text-sm text-slate-600">
-            Sentiment score vs. percent positive reviews across courses at this university.
-          </p>
+        <SectionCard
+          title="Course comparison"
+          subtitle="Sentiment score vs. percent positive reviews across this university"
+          className="mb-10"
+        >
           <CourseComparisonChart courses={comparison} />
-        </section>
+        </SectionCard>
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -77,13 +83,20 @@ export function SearchPage() {
           <Link
             key={course.course_id}
             to={`/universities/${uniId}/courses/${course.course_id}`}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-indigo-300 hover:shadow-md"
+            className="course-card group"
           >
-            <h2 className="text-xl font-semibold text-indigo-700">{course.course_code}</h2>
-            <p className="mt-1 text-slate-800">{course.course_name}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-brand-600">{course.course_code}</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-ink-950 group-hover:text-brand-700">
+              {course.course_name}
+            </h2>
+            <p className="mt-3 text-sm font-medium text-brand-600">View dashboard →</p>
           </Link>
         ))}
       </div>
-    </div>
+
+      {!loading && courses.length === 0 && (
+        <p className="text-center text-sm text-ink-500">No courses match your search.</p>
+      )}
+    </PageShell>
   );
 }

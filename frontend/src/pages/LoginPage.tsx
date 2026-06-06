@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { PageShell } from "../components/ui/PageShell";
 
 export function LoginPage() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -31,7 +32,7 @@ export function LoginPage() {
       const code = err && typeof err === "object" && "code" in err ? String((err as { code: string }).code) : "";
       if (code === "auth/network-request-failed") {
         setError(
-          "Cannot reach Firebase Auth. Start the local emulator: ./scripts/start-firebase-emulator.sh (or: firebase emulators:start --only auth)",
+          "Cannot reach Firebase Auth. Start the local emulator: ./scripts/start-firebase-emulator.sh",
         );
       } else {
         setError(err instanceof Error ? err.message : "Authentication failed");
@@ -42,56 +43,61 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-12">
-      <h1 className="text-2xl font-bold text-slate-900">Sign in to submit reviews</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Browse universities and course analytics without an account. Sign in only to post a review.
-      </p>
-
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
-            required
-          />
+    <PageShell>
+      <div className="mx-auto flex min-h-[65vh] max-w-md flex-col justify-center">
+        <div className="hero-panel text-center">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Account</p>
+          <h1 className="font-display text-3xl font-bold text-ink-950">Sign in to submit reviews</h1>
+          <p className="mt-3 text-sm leading-relaxed text-ink-500">
+            Browse universities and analytics without an account. Sign in only when you want to post a review.
+          </p>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
-            minLength={6}
-            required
-          />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-        >
-          {submitting ? "Please wait..." : mode === "signin" ? "Sign in" : "Create account"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="w-full text-sm text-indigo-600 hover:underline"
-        >
-          {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
-        </button>
-      </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
-        <Link to="/" className="text-indigo-600 hover:underline">
-          Continue browsing without signing in
-        </Link>
-      </p>
-    </div>
+        <form onSubmit={handleSubmit} className="section-card mt-6 space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink-700">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              required
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-ink-700">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+              minLength={6}
+              required
+            />
+          </div>
+          {error && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
+          <button type="submit" disabled={submitting} className="btn-primary w-full">
+            {submitting ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            className="w-full text-sm font-medium text-brand-600 transition hover:text-brand-800"
+          >
+            {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-ink-500">
+          <Link to="/" className="font-medium text-brand-600 hover:text-brand-800">
+            Continue browsing without signing in →
+          </Link>
+        </p>
+      </div>
+    </PageShell>
   );
 }

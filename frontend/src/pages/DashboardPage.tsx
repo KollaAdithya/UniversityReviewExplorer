@@ -16,6 +16,7 @@ import { TopicList } from "../components/TopicList";
 import { KpiCards } from "../components/charts/KpiCards";
 import { SemesterTrendSection } from "../components/charts/SemesterTrendSection";
 import { TopicBarChart } from "../components/charts/TopicBarChart";
+import { PageHero, PageShell, SectionCard } from "../components/ui/PageShell";
 
 function sentimentScore(positive: number, neutral: number, negative: number): number {
   const total = positive + neutral + negative;
@@ -117,84 +118,102 @@ export function DashboardPage() {
 
   if (!analytics) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <p className="text-slate-500">{error || "Loading dashboard..."}</p>
-      </div>
+      <PageShell>
+        {error ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="loading-pulse h-32" />
+            <div className="grid gap-4 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="loading-pulse h-24" />
+              ))}
+            </div>
+            <div className="loading-pulse h-64" />
+          </div>
+        )}
+      </PageShell>
     );
   }
 
   const topTopic = displayTopics[0]?.topic ?? analytics.topics[0] ?? "—";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <Link to={`/universities/${uniId}`} className="text-sm text-indigo-600 hover:underline">
-        ← Back to courses
-      </Link>
-
-      <header className="mt-4 mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">
-          {analytics.course_code}: {analytics.course_name}
-        </h1>
-        <p className="mt-2 text-slate-600">Analytics dashboard and review explorer</p>
-      </header>
-
-      <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold text-slate-800">Key metrics</h2>
+    <PageShell
+      hero={
+        <PageHero
+          eyebrow="Course dashboard"
+          title={`${analytics.course_code}: ${analytics.course_name}`}
+          description="Sentiment breakdown, topic trends, AI summary, and searchable student reviews."
+        >
+          <Link to={`/universities/${uniId}`} className="breadcrumb">
+            ← Back to courses
+          </Link>
+        </PageHero>
+      }
+    >
+      <SectionCard title="Key metrics" className="mb-8">
         <KpiCards
           totalReviews={analytics.review_count}
           avgRating={analytics.avg_rating}
           sentimentScore={kpiSentiment}
           topTopic={topTopic}
         />
-      </section>
+      </SectionCard>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Sentiment distribution</h2>
+        <SectionCard title="Sentiment distribution" subtitle="Share of positive, neutral, and negative reviews">
           <SentimentChart
             positive={analytics.positive}
             neutral={analytics.neutral}
             negative={analytics.negative}
           />
-        </section>
+        </SectionCard>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Topic distribution</h2>
+        <SectionCard title="Topic distribution" subtitle="Most frequently mentioned themes in reviews">
           <TopicBarChart topics={displayTopics} />
-        </section>
+        </SectionCard>
       </div>
 
-      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">AI summary</h2>
-        <div className="rounded-lg border-l-4 border-indigo-500 bg-indigo-50 p-4 text-slate-800 leading-relaxed">
-          {analytics.summary}
-        </div>
-        <div className="mt-4">
-          <h3 className="mb-2 text-sm font-semibold text-slate-600">Top topic tags</h3>
+      <SectionCard
+        title="AI summary"
+        subtitle="Auto-generated overview from review corpus"
+        className="mt-8"
+      >
+        <div className="summary-callout border-l-4 border-l-brand-500">{analytics.summary}</div>
+        <div className="mt-5">
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-400">Top topic tags</h3>
           <TopicList topics={analytics.topics} />
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Semester-over-semester comparison</h2>
+      <SectionCard
+        title="Semester-over-semester comparison"
+        subtitle="How sentiment and ratings change across terms"
+        className="mt-8"
+      >
         <SemesterTrendSection trends={trends} courseCode={analytics.course_code} />
-      </section>
+      </SectionCard>
 
-      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Review explorer</h2>
-
+      <SectionCard
+        title="Review explorer"
+        subtitle="Filter and search individual student reviews"
+        className="mt-8"
+      >
         <div className="mb-4 grid gap-3 md:grid-cols-4">
           <input
             type="search"
-            placeholder="Search review text..."
+            placeholder="Search review text…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 md:col-span-2"
+            className="input-field md:col-span-2"
           />
           <select
             value={semester}
             onChange={(e) => setSemester(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
+            className="select-field"
           >
             <option value="">All semesters</option>
             <option value="Fall">Fall</option>
@@ -203,7 +222,7 @@ export function DashboardPage() {
           <select
             value={sentiment}
             onChange={(e) => setSentiment(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2"
+            className="select-field"
           >
             <option value="">All sentiments</option>
             <option value="positive">Positive</option>
@@ -215,7 +234,7 @@ export function DashboardPage() {
           <select
             value={professor}
             onChange={(e) => setProfessor(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="select-field"
           >
             <option value="">All professors</option>
             {professors.map((name) => (
@@ -231,19 +250,22 @@ export function DashboardPage() {
             <ReviewCard key={review.review_id} review={review} />
           ))}
           {filteredReviews.length === 0 && (
-            <p className="text-slate-500">No reviews match these filters.</p>
+            <p className="text-center text-sm text-ink-500">No reviews match these filters.</p>
           )}
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold">Submit a review</h2>
+      <SectionCard
+        title="Submit a review"
+        subtitle="Sign in to share your experience with this course"
+        className="mt-8"
+      >
         <RequireAuth>
           <form onSubmit={handleSubmit} className="space-y-4">
             <select
               value={offeringId}
               onChange={(e) => setOfferingId(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="select-field"
               required
             >
               {offerings.map((offering) => (
@@ -253,34 +275,36 @@ export function DashboardPage() {
               ))}
             </select>
             <div>
-              <label className="mb-1 block text-sm text-slate-600">Rating: {rating}/5</label>
+              <label className="mb-2 block text-sm font-medium text-ink-600">
+                Rating: <span className="font-bold text-brand-700">{rating}/5</span>
+              </label>
               <input
                 type="range"
                 min={1}
                 max={5}
                 value={rating}
                 onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full"
+                className="w-full accent-brand-600"
               />
             </div>
             <textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Share your experience with this course..."
-              className="min-h-28 w-full rounded-lg border border-slate-300 px-3 py-2"
+              placeholder="Share your experience with this course…"
+              className="input-field min-h-28 resize-y"
               required
             />
-            {error && <p className="text-red-600">{error}</p>}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {submitting ? "Submitting..." : "Submit Review"}
+            {error && (
+              <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                {error}
+              </p>
+            )}
+            <button type="submit" disabled={submitting} className="btn-primary">
+              {submitting ? "Submitting…" : "Submit review"}
             </button>
           </form>
         </RequireAuth>
-      </section>
-    </div>
+      </SectionCard>
+    </PageShell>
   );
 }
