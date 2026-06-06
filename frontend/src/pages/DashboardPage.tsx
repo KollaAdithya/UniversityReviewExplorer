@@ -49,6 +49,7 @@ export function DashboardPage() {
   const [search, setSearch] = useState("");
   const [offeringId, setOfferingId] = useState("");
   const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -400,17 +401,27 @@ export function DashboardPage() {
               ))}
             </select>
             <div>
-              <label className="mb-2 block text-sm font-medium text-ink-600">
-                Rating: <span className="font-bold text-brand-700">{rating}/5</span>
-              </label>
-              <input
-                type="range"
-                min={1}
-                max={5}
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full accent-brand-600"
-              />
+              <label className="mb-2 block text-sm font-medium text-ink-400">Your rating</label>
+              <div className="flex items-center gap-2">
+                <div className="flex" onMouseLeave={() => setHoverRating(0)}>
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const active = star <= (hoverRating || rating);
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        className="p-0.5 text-3xl leading-none transition-transform hover:scale-110 focus:outline-none"
+                      >
+                        <span className={active ? "text-amber-400" : "text-ink-600"}>★</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className="text-sm font-semibold text-ink-300">{hoverRating || rating}/5</span>
+              </div>
             </div>
             <textarea
               value={reviewText}
