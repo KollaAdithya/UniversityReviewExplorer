@@ -208,7 +208,9 @@ class CourseService:
             )
         return sorted(comparison, key=lambda item: item["course_code"])
 
-    def refresh_course_summary(self, db: Session, course_id: UUID) -> None:
+    def refresh_course_summary(
+        self, db: Session, course_id: UUID, provider: str | None = None
+    ) -> dict:
         reviews = (
             db.query(Review)
             .join(CourseOffering, CourseOffering.offering_id == Review.offering_id)
@@ -232,7 +234,9 @@ class CourseService:
         total = positive + neutral + negative
         overall = round((positive - negative) / total, 2) if total else 0.0
         top_topics = self._top_topics(db, course_id)
-        summary_text = ml_service.generate_summary(texts, positive, neutral, negative, top_topics)
+        summary_text, source, fallback_error = ml_service.generate_summary_with_source(
+            texts, positive, neutral, negative, top_topics, provider=provider
+        )
 
         existing = db.query(CourseSummary).filter(CourseSummary.course_id == course_id).first()
         if existing:
@@ -254,6 +258,15 @@ class CourseService:
                     updated_at=datetime.utcnow(),
                 )
             )
+
+        return {
+            "course_id": course_id,
+            "summary": summary_text,
+            "source": source,
+            "requested_provider": provider or "default",
+            "model": ml_service._model_for_source(source),
+            "fallback_error": fallback_error,
+        }
 
 
 class ReviewService:
@@ -337,7 +350,7 @@ class ReviewService:
         db.add(review)
         db.flush()
 
-        sentiment_result = ml_service.analyze_sentiment(review_text)
+        sentiment_result, topics = ml_service.process_live_review(review_text)
         db.add(
             SentimentAnalysis(
                 review_id=review.review_id,
@@ -346,7 +359,7 @@ class ReviewService:
             )
         )
 
-        for topic in ml_service.extract_topics(review_text):
+        for topic in topics:
             db.add(TopicAnalysis(review_id=review.review_id, topic_name=topic))
 
         self.course_service.refresh_course_summary(db, offering.course_id)

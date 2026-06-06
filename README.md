@@ -9,7 +9,7 @@ Local-first platform for exploring course reviews across universities with AI-po
 - **Database:** SQLite locally (Docker Postgres optional)
 - **Auth:** Firebase Authentication (local Auth Emulator; production-ready token verification)
 - **Data:** Real public RMP research sample ([`data/rmp_public.csv`](data/rmp_public.csv), ~1k reviews / 46 schools)
-- **ML:** Mock NLP locally; Vertex AI Gemini on GCP
+- **ML:** Mock NLP for bulk import; **Groq (cloud Llama)** for live reviews + summaries; optional local Ollama; Vertex AI Gemini on GCP
 - **Analytics:** BigQuery-ready cross-university topic analytics
 
 ## Run locally
@@ -38,6 +38,50 @@ Open http://127.0.0.1:5174
 - Automated checks use `AUTH_DEV_TOKEN` from `.env.example`.
 
 Install the emulator CLI once: `npm install -g firebase-tools`
+
+### AI / Llama (sentiment + summaries)
+
+You do **not** have to run a model locally. Pick a provider in `backend/.env`:
+
+| Provider | Cost | Setup |
+|----------|------|-------|
+| **`openai`** | Pay-as-you-go (e.g. $10 credits) | [OpenAI API key](https://platform.openai.com/) — GPT summaries |
+| **`groq`** (free cloud Llama) | Free tier, rate-limited | [Groq API key](https://console.groq.com/) — no local install |
+| **`ollama`** | Free | Install Ollama, runs Llama on your Mac |
+| **`vertex`** | GCP billing / credits | `USE_MOCK_ML=false` + `GCP_PROJECT` |
+| **`mock`** | Free | Default — keyword rules, no AI |
+
+#### Option A — Groq cloud API (no local model)
+
+```bash
+# backend/.env
+ML_PROVIDER=groq
+GROQ_API_KEY=gsk_...          # https://console.groq.com/keys
+GROQ_MODEL=llama-3.1-8b-instant
+OLLAMA_LIVE_REVIEWS_ONLY=true # also applies to Groq: mock bulk import, LLM for live reviews
+USE_MOCK_ML=true
+```
+
+Restart the backend. Dashboard summaries call Groq automatically; no Ollama app needed.
+
+#### Option B — Local Ollama
+
+```bash
+./scripts/start-ollama.sh
+
+# backend/.env
+ML_PROVIDER=ollama
+OLLAMA_MODEL=llama3.2:3b
+OLLAMA_LIVE_REVIEWS_ONLY=true
+USE_MOCK_ML=true
+```
+
+```bash
+python scripts/test_ollama_review.py
+python scripts/refresh_summaries.py
+```
+
+If the LLM provider is offline or missing an API key, the API **falls back to mock** NLP automatically.
 
 ## API endpoints
 
@@ -84,4 +128,22 @@ Set on Cloud Run: `USE_MOCK_ML=false`, `ENABLE_BIGQUERY=true`, Cloud SQL connect
 
 ## Environment
 
-Copy [`.env.example`](.env.example) to `backend/.env`. Include frontend origins in `CORS_ORIGINS`.
+Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and add your keys locally. Include frontend origins in `CORS_ORIGINS`.
+
+### Secrets & GitHub
+
+**Never commit real API keys.** Local secrets live only in:
+
+- `backend/.env` — `GROQ_API_KEY`, `AUTH_DEV_TOKEN`, GCP credentials path
+- `frontend/.env.local` — Firebase config (demo keys OK for emulator)
+
+Tracked templates (safe to push): `backend/.env.example`, `.env.example`, `frontend/.env.example`.
+
+Before pushing:
+
+```bash
+./scripts/check-secrets.sh
+git status   # backend/.env and frontend/.env.local must NOT appear as staged
+```
+
+If a key was ever pushed, **revoke it** in the Groq/Firebase/GCP console and create a new one.

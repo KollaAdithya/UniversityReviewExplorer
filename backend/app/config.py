@@ -12,6 +12,19 @@ class Settings(BaseSettings):
     database_url: str = DEFAULT_SQLITE_URL
     environment: str = "local"
     use_mock_ml: bool = True
+    ml_provider: str = "groq"
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_model: str = "llama3.2:3b"
+    ollama_timeout_sec: int = 90
+    ollama_live_reviews_only: bool = True
+    groq_api_key: str = ""
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+    groq_model: str = "llama-3.1-8b-instant"
+    groq_timeout_sec: int = 60
+    openai_api_key: str = ""
+    openai_base_url: str = "https://api.openai.com/v1"
+    openai_model: str = "gpt-4o-mini"
+    openai_timeout_sec: int = 60
     enable_bigquery: bool = False
     cors_origins: str = "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5174"
 

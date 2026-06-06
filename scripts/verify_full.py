@@ -110,6 +110,52 @@ def main() -> int:
         total = analytics["positive"] + analytics["neutral"] + analytics["negative"]
         checks.append(("Course analytics sum to 100%", total == 100))
 
+        llm = health.get("ollama") or {}
+        ml_provider = health.get("ml_provider", "mock")
+        providers = health.get("summary_providers") or {}
+        checks.append(("LLM ML provider enabled", llm.get("enabled") is True))
+        checks.append(("Summary provider options exposed", len(providers) >= 3))
+        if analytics.get("review_count", 0) > 0:
+            summary_refresh, _ = post(
+                f"/api/v1/universities/{uni_id}/courses/{course_id}/summary/refresh?provider=default",
+                {},
+            )
+            checks.append(
+                (
+                    "Summary refresh endpoint returns text",
+                    bool(summary_refresh and summary_refresh.get("summary")),
+                )
+            )
+            checks.append(
+                (
+                    "Default summary provider returns mock",
+                    summary_refresh.get("source") == "mock"
+                    and summary_refresh.get("requested_provider") == "default",
+                )
+            )
+            if providers.get("ollama", {}).get("available"):
+                ollama_refresh, _ = post(
+                    f"/api/v1/universities/{uni_id}/courses/{course_id}/summary/refresh?provider=ollama",
+                    {},
+                )
+                checks.append(
+                    (
+                        "Ollama summary provider works",
+                        ollama_refresh.get("source") == "ollama",
+                    )
+                )
+            if providers.get("groq", {}).get("available"):
+                groq_refresh, _ = post(
+                    f"/api/v1/universities/{uni_id}/courses/{course_id}/summary/refresh?provider=groq",
+                    {},
+                )
+                checks.append(
+                    (
+                        "Groq summary provider works",
+                        groq_refresh.get("source") == "groq",
+                    )
+                )
+
         topics = get(f"/api/v1/universities/{uni_id}/analytics/top-topics?limit=3")
         checks.append(("University top topics endpoint", len(topics.get("topics", [])) > 0))
 
@@ -134,7 +180,7 @@ def main() -> int:
             )
             checks.append(("Unauthenticated review rejected", unauth_status == 401))
 
-            post(
+            review_body, _ = post(
                 "/api/v1/reviews",
                 {
                     "offering_id": offerings[0]["offering_id"],
@@ -145,6 +191,19 @@ def main() -> int:
             )
             after = len(get(f"/api/v1/universities/{uni_id}/courses/{course_id}/reviews"))
             checks.append(("Review submission with dev token", after == before + 1))
+            checks.append(
+                (
+                    "Live review returns sentiment",
+                    review_body is not None and review_body.get("sentiment") in ("positive", "neutral", "negative"),
+                )
+            )
+            if llm.get("reachable"):
+                checks.append(
+                    (
+                        f"Live review returns topics from {ml_provider}",
+                        isinstance(review_body.get("topics"), list) and len(review_body["topics"]) > 0,
+                    )
+                )
 
             try:
                 firebase_token = firebase_sign_in("verify-e2e@demo.edu", "demo123456")

@@ -11,6 +11,7 @@ from app.schemas import (
     CourseAnalyticsResponse,
     CourseComparisonItem,
     CourseListItem,
+    CourseSummaryRefreshResponse,
     OfferingResponse,
     ReviewResponse,
     SemesterTrendPoint,
@@ -58,6 +59,32 @@ def get_university_course_analytics(
     if not analytics:
         raise HTTPException(status_code=404, detail="Course not found")
     return analytics
+
+
+@router.post(
+    "/{university_id}/courses/{course_id}/summary/refresh",
+    response_model=CourseSummaryRefreshResponse,
+)
+def refresh_university_course_summary(
+    university_id: UUID,
+    course_id: UUID,
+    provider: Optional[str] = Query(
+        default="default",
+        description="Summary engine: default | openai | groq | ollama",
+    ),
+    db: Session = Depends(get_db),
+):
+    if not course_service.get_course(db, course_id, university_id=university_id):
+        raise HTTPException(status_code=404, detail="Course not found")
+    normalized = (provider or "default").lower()
+    if normalized not in ("default", "openai", "groq", "ollama"):
+        raise HTTPException(
+            status_code=400,
+            detail="provider must be one of: default, openai, groq, ollama",
+        )
+    result = course_service.refresh_course_summary(db, course_id, provider=normalized)
+    db.commit()
+    return result
 
 
 @router.get("/{university_id}/courses/{course_id}/reviews", response_model=list[ReviewResponse])

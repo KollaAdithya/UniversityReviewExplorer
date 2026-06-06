@@ -6,6 +6,8 @@ import {
   type Offering,
   type Review,
   type SemesterTrendPoint,
+  type SummaryProvider,
+  type SummaryProviderInfo,
   type TopTopicItem,
 } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -24,6 +26,16 @@ function sentimentScore(positive: number, neutral: number, negative: number): nu
   return Math.round(((positive - negative) / total) * 1000) / 1000;
 }
 
+function summaryProviderLabel(
+  provider: string,
+  model: string | null | undefined,
+  unavailableNote?: string,
+): string {
+  const modelSuffix = model ? ` — ${model}` : "";
+  const note = unavailableNote ?? "";
+  return `${provider}${modelSuffix}${note}`;
+}
+
 export function DashboardPage() {
   const { user } = useAuth();
   const { uniId, courseId } = useParams<{ uniId: string; courseId: string }>();
@@ -40,6 +52,13 @@ export function DashboardPage() {
   const [reviewText, setReviewText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summarySource, setSummarySource] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryProvider, setSummaryProvider] = useState<SummaryProvider>("openai");
+  const [summaryProviders, setSummaryProviders] = useState<
+    Record<SummaryProvider, SummaryProviderInfo> | null
+  >(null);
 
   const professors = useMemo(
     () => Array.from(new Set(offerings.map((o) => o.professor_name))).sort(),
@@ -71,6 +90,23 @@ export function DashboardPage() {
     return sentimentScore(analytics.positive, analytics.neutral, analytics.negative);
   }, [analytics]);
 
+  const loadSummary = async (provider: SummaryProvider, reviewCount: number) => {
+    if (!uniId || !courseId || reviewCount === 0) return;
+    setSummaryLoading(true);
+    setSummarySource(null);
+    setSummaryError(null);
+    try {
+      const result = await api.refreshSummary(uniId, courseId, provider);
+      setAnalytics((prev) => (prev ? { ...prev, summary: result.summary } : prev));
+      setSummarySource(result.source);
+      setSummaryError(result.fallback_error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate summary");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   const loadDashboard = async () => {
     if (!uniId || !courseId) return;
     const [analyticsData, reviewData, offeringData, trendData] = await Promise.all([
@@ -90,11 +126,21 @@ export function DashboardPage() {
     if (!offeringId && offeringData.length > 0) {
       setOfferingId(offeringData[0].offering_id);
     }
+    return analyticsData.review_count;
   };
+
+  useEffect(() => {
+    api.getHealth().then((health) => setSummaryProviders(health.summary_providers)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadDashboard().catch((err: Error) => setError(err.message));
   }, [uniId, courseId, semester, professor, sentiment]);
+
+  useEffect(() => {
+    if (!uniId || !courseId || !analytics || analytics.review_count === 0) return;
+    loadSummary(summaryProvider, analytics.review_count);
+  }, [uniId, courseId, summaryProvider, analytics?.review_count]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -179,10 +225,67 @@ export function DashboardPage() {
 
       <SectionCard
         title="AI summary"
-        subtitle="Auto-generated overview from review corpus"
+        subtitle={
+          summaryLoading
+            ? `Generating summary via ${summaryProvider === "default" ? "default template" : summaryProvider}…`
+            : summarySource === "ollama"
+              ? "Llama summary (local Ollama)"
+              : summarySource === "openai"
+              ? `GPT summary (${summaryProviders?.openai?.model ?? "OpenAI"})`
+              : summarySource === "groq"
+                ? "Llama summary (Groq cloud API)"
+                : summarySource === "mock" && summaryProvider !== "default"
+                  ? summaryError
+                    ? `${summaryProvider} failed — ${summaryError}`
+                    : `${summaryProvider} unavailable — showing default template`
+                  : "Fast template summary (default)"
+        }
         className="mt-8"
       >
-        <div className="summary-callout border-l-4 border-l-brand-500">{analytics.summary}</div>
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <label htmlFor="summary-provider" className="text-sm font-medium text-ink-400">
+            Summary model
+          </label>
+          <select
+            id="summary-provider"
+            value={summaryProvider}
+            onChange={(e) => setSummaryProvider(e.target.value as SummaryProvider)}
+            className="select-field max-w-md"
+            disabled={summaryLoading}
+          >
+            <option value="default">Default — fast template</option>
+            <option value="openai" disabled={summaryProviders?.openai?.available === false}>
+              {summaryProviderLabel(
+                "OpenAI",
+                summaryProviders?.openai?.model,
+                summaryProviders?.openai?.available === false ? " (needs API key)" : undefined,
+              )}
+            </option>
+            <option value="groq" disabled={summaryProviders?.groq?.available === false}>
+              {summaryProviderLabel(
+                "Groq",
+                summaryProviders?.groq?.model,
+                summaryProviders?.groq?.available === false ? " (needs API key)" : undefined,
+              )}
+            </option>
+            <option value="ollama" disabled={summaryProviders?.ollama?.available === false}>
+              {summaryProviderLabel(
+                "Ollama",
+                summaryProviders?.ollama?.model,
+                summaryProviders?.ollama?.available === false ? " (not running)" : undefined,
+              )}
+            </option>
+          </select>
+        </div>
+        {summaryLoading ? (
+          <div className="space-y-2">
+            <div className="loading-pulse h-4 w-full" />
+            <div className="loading-pulse h-4 w-5/6" />
+            <div className="loading-pulse h-4 w-4/6" />
+          </div>
+        ) : (
+          <div className="summary-callout border-l-4 border-l-brand-500">{analytics.summary}</div>
+        )}
         <div className="mt-5">
           <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-ink-400">Top topic tags</h3>
           <TopicList topics={analytics.topics} />
@@ -300,7 +403,7 @@ export function DashboardPage() {
               </p>
             )}
             <button type="submit" disabled={submitting} className="btn-primary">
-              {submitting ? "Submitting…" : "Submit review"}
+              {submitting ? "Analyzing with AI…" : "Submit review"}
             </button>
           </form>
         </RequireAuth>

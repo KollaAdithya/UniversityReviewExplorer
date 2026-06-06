@@ -1,0 +1,57 @@
+# --- Secrets & environment (never commit real keys) ---
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+!.env.example
+!**/.env.example
+
+# API keys / service accounts
+*credentials*.json
+*service-account*.json
+*firebase-adminsdk*.json
+*.pem
+*.p12
+
+# --- Local databases ---
+*.db
+*.sqlite
+*.sqlite3
+backend/course_reviews.db
+course_reviews.db
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+backend/.venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- Node / frontend build ---
+node_modules/
+frontend/node_modules/
+frontend/dist/
+npm-debug.log*
+yarn-error.log*
+
+# --- Logs & temp ---
+*.log
+/tmp/
+.cache/
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# --- Ollama local logs ---
+ollama-serve.log

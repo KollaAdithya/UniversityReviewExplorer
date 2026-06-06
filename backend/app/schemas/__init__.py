@@ -59,6 +59,22 @@ class CourseAnalyticsResponse(BaseModel):
     avg_rating: float = 0.0
 
 
+class SummaryProviderInfo(BaseModel):
+    label: str
+    description: str
+    available: bool
+    model: Optional[str] = None
+
+
+class CourseSummaryRefreshResponse(BaseModel):
+    course_id: UUID
+    summary: str
+    source: str
+    requested_provider: str = "default"
+    model: Optional[str] = None
+    fallback_error: Optional[str] = None
+
+
 class SemesterTrendPoint(BaseModel):
     semester_label: str
     semester: str

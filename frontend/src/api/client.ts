@@ -57,6 +57,30 @@ export interface CourseAnalytics {
   avg_rating: number;
 }
 
+export type SummaryProvider = "default" | "openai" | "groq" | "ollama";
+
+export interface SummaryProviderInfo {
+  label: string;
+  description: string;
+  available: boolean;
+  model: string | null;
+}
+
+export interface CourseSummaryRefresh {
+  course_id: string;
+  summary: string;
+  source: "ollama" | "groq" | "mock" | "vertex" | string;
+  requested_provider: SummaryProvider;
+  model: string | null;
+  fallback_error: string | null;
+}
+
+export interface HealthResponse {
+  status: string;
+  ml_provider: string;
+  summary_providers: Record<SummaryProvider, SummaryProviderInfo>;
+}
+
 export interface SemesterTrendPoint {
   semester_label: string;
   semester: string;
@@ -118,6 +142,7 @@ export interface AuthMe {
 }
 
 export const api = {
+  getHealth: () => request<HealthResponse>("/health"),
   getMe: () => request<AuthMe>("/api/v1/auth/me"),
   listUniversities: (q?: string) =>
     request<University[]>(`/api/v1/universities${q ? `?q=${encodeURIComponent(q)}` : ""}`),
@@ -129,6 +154,11 @@ export const api = {
     ),
   getAnalytics: (universityId: string, courseId: string) =>
     request<CourseAnalytics>(`/api/v1/universities/${universityId}/courses/${courseId}/analytics`),
+  refreshSummary: (universityId: string, courseId: string, provider: SummaryProvider = "default") =>
+    request<CourseSummaryRefresh>(
+      `/api/v1/universities/${universityId}/courses/${courseId}/summary/refresh?provider=${provider}`,
+      { method: "POST" },
+    ),
   getSemesterTrends: (universityId: string, courseId: string) =>
     request<SemesterTrendPoint[]>(
       `/api/v1/universities/${universityId}/courses/${courseId}/trends`,
