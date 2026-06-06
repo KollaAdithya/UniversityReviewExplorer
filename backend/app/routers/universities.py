@@ -9,9 +9,11 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas import (
     CourseAnalyticsResponse,
+    CourseComparisonItem,
     CourseListItem,
     OfferingResponse,
     ReviewResponse,
+    SemesterTrendPoint,
     UniversityDetailResponse,
     UniversityListItem,
     UniversityTopicAnalyticsResponse,
@@ -100,6 +102,30 @@ def list_university_course_offerings(
         )
         for offering in offerings
     ]
+
+
+@router.get(
+    "/{university_id}/courses/{course_id}/trends",
+    response_model=list[SemesterTrendPoint],
+)
+def get_course_semester_trends(
+    university_id: UUID,
+    course_id: UUID,
+    db: Session = Depends(get_db),
+):
+    if not course_service.get_course(db, course_id, university_id=university_id):
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course_service.get_semester_trends(db, course_id, university_id=university_id)
+
+
+@router.get(
+    "/{university_id}/analytics/course-comparison",
+    response_model=list[CourseComparisonItem],
+)
+def get_university_course_comparison(university_id: UUID, db: Session = Depends(get_db)):
+    if not university_service.get_university(db, university_id):
+        raise HTTPException(status_code=404, detail="University not found")
+    return course_service.get_university_course_comparison(db, university_id)
 
 
 @router.get("/{university_id}/analytics/top-topics", response_model=UniversityTopicAnalyticsResponse)

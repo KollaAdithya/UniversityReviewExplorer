@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, type Course, type University } from "../api/client";
+import { api, type Course, type CourseComparisonItem, type University } from "../api/client";
+import { CourseComparisonChart } from "../components/charts/CourseComparisonChart";
 
 export function SearchPage() {
   const { uniId } = useParams<{ uniId: string }>();
   const [query, setQuery] = useState("");
   const [university, setUniversity] = useState<University | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [comparison, setComparison] = useState<CourseComparisonItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,11 +16,16 @@ export function SearchPage() {
     if (!uniId) return;
     let active = true;
     setLoading(true);
-    Promise.all([api.getUniversity(uniId), api.listCourses(uniId, query || undefined)])
-      .then(([uniData, courseData]) => {
+    Promise.all([
+      api.getUniversity(uniId),
+      api.listCourses(uniId, query || undefined),
+      api.getCourseComparison(uniId),
+    ])
+      .then(([uniData, courseData, comparisonData]) => {
         if (!active) return;
         setUniversity(uniData);
         setCourses(courseData);
+        setComparison(comparisonData);
       })
       .catch((err: Error) => {
         if (active) setError(err.message);
@@ -54,6 +61,16 @@ export function SearchPage() {
 
       {loading && <p className="text-slate-500">Loading courses...</p>}
       {error && <p className="text-red-600">{error}</p>}
+
+      {comparison.length >= 2 && (
+        <section className="mb-10 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold">Course comparison</h2>
+          <p className="mb-4 text-sm text-slate-600">
+            Sentiment score vs. percent positive reviews across courses at this university.
+          </p>
+          <CourseComparisonChart courses={comparison} />
+        </section>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {courses.map((course) => (

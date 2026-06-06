@@ -55,7 +55,19 @@ class CourseService:
             return None
 
         summary = db.query(CourseSummary).filter(CourseSummary.course_id == course_id).first()
-        topics = self._top_topics(db, course_id)
+        topic_counts = self._topic_counts(db, course_id)
+        topics = [item["topic"] for item in topic_counts[:5]]
+
+        review_stats = (
+            db.query(Review.rating)
+            .join(CourseOffering, CourseOffering.offering_id == Review.offering_id)
+            .filter(CourseOffering.course_id == course_id)
+            .all()
+        )
+        review_count = len(review_stats)
+        avg_rating = (
+            round(sum(r[0] for r in review_stats) / review_count, 2) if review_count else 0.0
+        )
 
         if summary:
             total = summary.positive_reviews + summary.neutral_reviews + summary.negative_reviews
@@ -78,10 +90,13 @@ class CourseService:
             "neutral": neutral_pct,
             "negative": negative_pct,
             "topics": topics,
+            "topic_breakdown": topic_counts[:10],
             "summary": generated_summary,
+            "review_count": review_count,
+            "avg_rating": avg_rating,
         }
 
-    def _top_topics(self, db: Session, course_id: UUID, limit: int = 5) -> list[str]:
+    def _topic_counts(self, db: Session, course_id: UUID, limit: int = 10) -> list[dict]:
         rows = (
             db.query(TopicAnalysis.topic_name)
             .join(Review, Review.review_id == TopicAnalysis.review_id)
@@ -92,7 +107,106 @@ class CourseService:
         counts: dict[str, int] = {}
         for (topic_name,) in rows:
             counts[topic_name] = counts.get(topic_name, 0) + 1
-        return [topic for topic, _ in sorted(counts.items(), key=lambda item: item[1], reverse=True)[:limit]]
+        return [
+            {"topic": topic, "count": count}
+            for topic, count in sorted(counts.items(), key=lambda item: item[1], reverse=True)[:limit]
+        ]
+
+    def _top_topics(self, db: Session, course_id: UUID, limit: int = 5) -> list[str]:
+        return [item["topic"] for item in self._topic_counts(db, course_id, limit=limit)]
+
+    @staticmethod
+    def _semester_sort_key(semester: str, year: int) -> tuple:
+        season_order = 0 if semester.lower().startswith("spring") else 1
+        return (year, season_order)
+
+    @staticmethod
+    def _sentiment_score(positive: int, neutral: int, negative: int) -> float:
+        total = positive + neutral + negative
+        if total == 0:
+            return 0.0
+        return round((positive - negative) / total, 3)
+
+    def get_semester_trends(
+        self,
+        db: Session,
+        course_id: UUID,
+        university_id: UUID | None = None,
+    ) -> list[dict]:
+        reviews = review_service.list_reviews(db, course_id=course_id, university_id=university_id)
+        buckets: dict[tuple[str, int, str], dict] = {}
+
+        for review in reviews:
+            semester = review.get("semester") or "Unknown"
+            year = review.get("year") or 0
+            label = f"{semester} {year}".strip()
+            key = (semester, year, label)
+            if key not in buckets:
+                buckets[key] = {
+                    "semester_label": label,
+                    "semester": semester,
+                    "year": year,
+                    "ratings": [],
+                    "positive": 0,
+                    "neutral": 0,
+                    "negative": 0,
+                }
+            bucket = buckets[key]
+            bucket["ratings"].append(review["rating"])
+            sentiment = (review.get("sentiment") or "neutral").lower()
+            if sentiment == "positive":
+                bucket["positive"] += 1
+            elif sentiment == "negative":
+                bucket["negative"] += 1
+            else:
+                bucket["neutral"] += 1
+
+        results = []
+        for key in sorted(buckets.keys(), key=lambda k: self._semester_sort_key(k[0], k[1])):
+            bucket = buckets[key]
+            total = bucket["positive"] + bucket["neutral"] + bucket["negative"]
+            results.append(
+                {
+                    "semester_label": bucket["semester_label"],
+                    "semester": bucket["semester"],
+                    "year": bucket["year"],
+                    "review_count": total,
+                    "avg_rating": round(sum(bucket["ratings"]) / len(bucket["ratings"]), 2)
+                    if bucket["ratings"]
+                    else 0.0,
+                    "positive_pct": round(bucket["positive"] * 100 / total, 1) if total else 0.0,
+                    "sentiment_score": self._sentiment_score(
+                        bucket["positive"], bucket["neutral"], bucket["negative"]
+                    ),
+                }
+            )
+        return results
+
+    def get_university_course_comparison(
+        self,
+        db: Session,
+        university_id: UUID,
+    ) -> list[dict]:
+        courses = self.list_courses(db, university_id=university_id)
+        comparison = []
+        for course in courses:
+            analytics = self.get_analytics(db, course.course_id, university_id=university_id)
+            if not analytics:
+                continue
+            comparison.append(
+                {
+                    "course_id": course.course_id,
+                    "course_code": course.course_code,
+                    "course_name": course.course_name,
+                    "review_count": analytics["review_count"],
+                    "avg_rating": analytics["avg_rating"],
+                    "positive_pct": float(analytics["positive"]),
+                    "sentiment_score": self._sentiment_score(
+                        analytics["positive"], analytics["neutral"], analytics["negative"]
+                    ),
+                }
+            )
+        return sorted(comparison, key=lambda item: item["course_code"])
 
     def refresh_course_summary(self, db: Session, course_id: UUID) -> None:
         reviews = (

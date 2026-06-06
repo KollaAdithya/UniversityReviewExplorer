@@ -53,7 +53,30 @@ class CourseAnalyticsResponse(BaseModel):
     neutral: int
     negative: int
     topics: list[str]
+    topic_breakdown: list["TopTopicItem"] = Field(default_factory=list)
     summary: str
+    review_count: int = 0
+    avg_rating: float = 0.0
+
+
+class SemesterTrendPoint(BaseModel):
+    semester_label: str
+    semester: str
+    year: int
+    review_count: int
+    avg_rating: float
+    positive_pct: float
+    sentiment_score: float
+
+
+class CourseComparisonItem(BaseModel):
+    course_id: UUID
+    course_code: str
+    course_name: str
+    review_count: int
+    avg_rating: float
+    positive_pct: float
+    sentiment_score: float
 
 
 class ReviewResponse(BaseModel):

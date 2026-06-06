@@ -51,7 +51,30 @@ export interface CourseAnalytics {
   neutral: number;
   negative: number;
   topics: string[];
+  topic_breakdown: TopTopicItem[];
   summary: string;
+  review_count: number;
+  avg_rating: number;
+}
+
+export interface SemesterTrendPoint {
+  semester_label: string;
+  semester: string;
+  year: number;
+  review_count: number;
+  avg_rating: number;
+  positive_pct: number;
+  sentiment_score: number;
+}
+
+export interface CourseComparisonItem {
+  course_id: string;
+  course_code: string;
+  course_name: string;
+  review_count: number;
+  avg_rating: number;
+  positive_pct: number;
+  sentiment_score: number;
 }
 
 export interface Review {
@@ -106,6 +129,14 @@ export const api = {
     ),
   getAnalytics: (universityId: string, courseId: string) =>
     request<CourseAnalytics>(`/api/v1/universities/${universityId}/courses/${courseId}/analytics`),
+  getSemesterTrends: (universityId: string, courseId: string) =>
+    request<SemesterTrendPoint[]>(
+      `/api/v1/universities/${universityId}/courses/${courseId}/trends`,
+    ),
+  getCourseComparison: (universityId: string) =>
+    request<CourseComparisonItem[]>(
+      `/api/v1/universities/${universityId}/analytics/course-comparison`,
+    ),
   getReviews: (universityId: string, courseId: string, params?: Record<string, string>) => {
     const query = params
       ? "?" + new URLSearchParams(Object.entries(params).filter(([, v]) => v)).toString()
