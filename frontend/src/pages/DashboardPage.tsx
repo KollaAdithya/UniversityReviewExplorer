@@ -135,13 +135,23 @@ export function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    setSummarySource(null);
+    setSummaryError(null);
+  }, [uniId, courseId]);
+
+  useEffect(() => {
     loadDashboard().catch((err: Error) => setError(err.message));
   }, [uniId, courseId, semester, professor, sentiment]);
 
   useEffect(() => {
-    if (!uniId || !courseId || !analytics || analytics.review_count === 0) return;
+    setSummarySource(null);
+    setSummaryError(null);
+  }, [summaryProvider]);
+
+  const handleGenerateSummary = () => {
+    if (!analytics || analytics.review_count === 0) return;
     loadSummary(summaryProvider, analytics.review_count);
-  }, [uniId, courseId, summaryProvider, analytics?.review_count]);
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -232,51 +242,63 @@ export function DashboardPage() {
             : summarySource === "ollama"
               ? "Llama summary (local Ollama)"
               : summarySource === "openai"
-              ? `GPT summary (${summaryProviders?.openai?.model ?? "OpenAI"})`
-              : summarySource === "groq"
-                ? "Llama summary (Groq cloud API)"
-                : summarySource === "mock" && summaryProvider !== "default"
-                  ? summaryError
-                    ? `${summaryProvider} failed — ${summaryError}`
-                    : `${summaryProvider} unavailable — showing default template`
-                  : "Fast template summary (default)"
+                ? `GPT summary (${summaryProviders?.openai?.model ?? "OpenAI"})`
+                : summarySource === "groq"
+                  ? "Llama summary (Groq cloud API)"
+                  : summarySource === "mock" && summaryProvider !== "default"
+                    ? summaryError
+                      ? `${summaryProvider} failed — ${summaryError}`
+                      : `${summaryProvider} unavailable — showing default template`
+                    : summarySource === "mock"
+                      ? "Fast template summary (default)"
+                      : "Stored course summary — choose a model and click Generate"
         }
         className="mt-8"
       >
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <label htmlFor="summary-provider" className="text-sm font-medium text-ink-400">
-            Summary model
-          </label>
-          <select
-            id="summary-provider"
-            value={summaryProvider}
-            onChange={(e) => setSummaryProvider(e.target.value as SummaryProvider)}
-            className="select-field max-w-md"
-            disabled={summaryLoading}
+        <div className="mb-4 flex flex-wrap items-end gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:max-w-md">
+            <label htmlFor="summary-provider" className="text-sm font-medium text-ink-400">
+              Summary model
+            </label>
+            <select
+              id="summary-provider"
+              value={summaryProvider}
+              onChange={(e) => setSummaryProvider(e.target.value as SummaryProvider)}
+              className="select-field"
+              disabled={summaryLoading}
+            >
+              <option value="ollama" disabled={summaryProviders?.ollama?.available === false}>
+                {summaryProviderLabel(
+                  "Ollama (local)",
+                  summaryProviders?.ollama?.model,
+                  summaryProviders?.ollama?.available === false ? " (not running)" : undefined,
+                )}
+              </option>
+              <option value="openai" disabled={summaryProviders?.openai?.available === false}>
+                {summaryProviderLabel(
+                  "OpenAI",
+                  summaryProviders?.openai?.model,
+                  summaryProviders?.openai?.available === false ? " (needs API key)" : undefined,
+                )}
+              </option>
+              <option value="groq" disabled={summaryProviders?.groq?.available === false}>
+                {summaryProviderLabel(
+                  "Groq",
+                  summaryProviders?.groq?.model,
+                  summaryProviders?.groq?.available === false ? " (needs API key)" : undefined,
+                )}
+              </option>
+              <option value="default">Default — fast template</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={handleGenerateSummary}
+            disabled={summaryLoading || analytics.review_count === 0}
+            className="btn-primary shrink-0"
           >
-            <option value="ollama" disabled={summaryProviders?.ollama?.available === false}>
-              {summaryProviderLabel(
-                "Ollama (local)",
-                summaryProviders?.ollama?.model,
-                summaryProviders?.ollama?.available === false ? " (not running)" : undefined,
-              )}
-            </option>
-            <option value="openai" disabled={summaryProviders?.openai?.available === false}>
-              {summaryProviderLabel(
-                "OpenAI",
-                summaryProviders?.openai?.model,
-                summaryProviders?.openai?.available === false ? " (needs API key)" : undefined,
-              )}
-            </option>
-            <option value="groq" disabled={summaryProviders?.groq?.available === false}>
-              {summaryProviderLabel(
-                "Groq",
-                summaryProviders?.groq?.model,
-                summaryProviders?.groq?.available === false ? " (needs API key)" : undefined,
-              )}
-            </option>
-            <option value="default">Default — fast template</option>
-          </select>
+            {summaryLoading ? "Generating…" : "Generate summary"}
+          </button>
         </div>
         {summaryLoading ? (
           <div className="space-y-2">
