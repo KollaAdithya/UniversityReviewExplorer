@@ -6,7 +6,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/scripts/gcp-config.sh"
 
 : "${FIREBASE_PROJECT_ID:?Set FIREBASE_PROJECT_ID (your Firebase project ID)}"
-: "${CORS_ORIGINS:?Set CORS_ORIGINS (comma-separated frontend URLs)}"
+
+# GCS-hosted frontend always sends Origin: https://storage.googleapis.com
+# (sourcing backend/.env can accidentally set localhost-only CORS — always include prod origin)
+export CORS_ORIGINS="${CORS_ORIGINS:-https://storage.googleapis.com}"
+if [[ "$CORS_ORIGINS" != *"storage.googleapis.com"* ]]; then
+  export CORS_ORIGINS="https://storage.googleapis.com,$CORS_ORIGINS"
+fi
 
 echo "==> Ensuring Artifact Registry repo exists…"
 gcloud artifacts repositories describe "$AR_REPO" \
