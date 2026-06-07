@@ -199,17 +199,39 @@ python scripts/import_public_data.py --file data/rmp_public.csv --force
 python scripts/import_public_data.py --file data/your_mendeley_file.csv --force --max-rows 50000
 ```
 
-## GCP deployment (Stage 2)
+## GCP deployment (teammates)
+
+Each developer deploys to **their own** GCP project. The repo ships templates only — no real project IDs or API keys.
+
+| Guide | When to use |
+|-------|-------------|
+| [`docs/GCP_README.md`](docs/GCP_README.md) | First time on GCP — account, billing, Firebase, step-by-step deploy |
+| [`docs/GCP_DEPLOYMENT.md`](docs/GCP_DEPLOYMENT.md) | Technical reference — resources created, updates, troubleshooting |
+
+**Quick start** (billing + Firebase project required):
 
 ```bash
-export GCP_PROJECT=your-project-id
-export VITE_API_BASE_URL=https://your-api-url
-./scripts/setup-gcp.sh
-./scripts/deploy-backend.sh
-./scripts/deploy-frontend.sh
+chmod +x scripts/*.sh
+./scripts/install-gcp-tools.sh            # gcloud + Python deps (local .cache/)
+cp infra/gcp.env.example infra/gcp.env   # YOUR project + Firebase keys — never commit
+set -a && source infra/gcp.env && set +a
+gcloud config set project "$GCP_PROJECT"
+./scripts/verify-gcp-prereqs.sh         # fix anything marked ✗
+./scripts/deploy-gcp.sh                   # ~15–20 min: SQL, Cloud Run, GCS, seed data
 ```
 
-Set on Cloud Run: `USE_MOCK_ML=false`, `ENABLE_BIGQUERY=true`, Cloud SQL connection string.
+After deploy: add **`storage.googleapis.com`** to Firebase → Authentication → Settings → Authorized domains (required for sign-in on the GCS URL).
+
+**Architecture on GCP:**
+
+| Component | Service |
+|-----------|---------|
+| Frontend | GCS static hosting |
+| Backend | Cloud Run |
+| Database | Cloud SQL (PostgreSQL) |
+| Auth | Firebase Authentication |
+| AI summaries | Groq / OpenAI / Vertex AI (Ollama is local-only) |
+| Analytics | BigQuery |
 
 ## Environment
 
@@ -217,18 +239,23 @@ Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and add yo
 
 ### Secrets & GitHub
 
-**Never commit real API keys.** Local secrets live only in:
+**Never commit real API keys or GCP config.** Keep secrets only in local files:
 
-- `backend/.env` — `OPENAI_API_KEY`, `GROQ_API_KEY`, `AUTH_DEV_TOKEN`, GCP credentials path
-- `frontend/.env.local` — Firebase config (demo keys OK for emulator)
+| File | Contents | Committed? |
+|------|----------|------------|
+| `infra/gcp.env` | GCP project ID, Firebase web keys | **No** (gitignored) |
+| `backend/.env` | OpenAI/Groq keys, dev tokens | **No** (gitignored) |
+| `frontend/.env.local` | Firebase config for local dev | **No** (gitignored) |
+| `infra/gcp.env.example` | Placeholders only | Yes (safe) |
+| `backend/.env.example`, `frontend/.env.example` | Placeholders only | Yes (safe) |
 
-Tracked templates (safe to push): `backend/.env.example`, `.env.example`, `frontend/.env.example`.
-
-Before pushing:
+Before every push:
 
 ```bash
 ./scripts/check-secrets.sh
-git status   # backend/.env and frontend/.env.local must NOT appear as staged
+git status   # infra/gcp.env, backend/.env, frontend/.env.local must NOT be staged
 ```
+
+On GCP, store production API keys in **Secret Manager** (`groq-api-key`, `openai-api-key`) — not in the repo.
 
 If a key was ever pushed, **revoke it** in the Groq/Firebase/GCP console and create a new one.

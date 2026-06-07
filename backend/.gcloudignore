@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+.env
+.env.*
+course_reviews.db
+.pytest_cache/
+.mypy_cache/

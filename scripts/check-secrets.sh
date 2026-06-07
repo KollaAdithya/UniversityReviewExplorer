@@ -16,6 +16,7 @@ PATTERNS=(
 BLOCKED_PATHS=(
   'backend/.env'
   'frontend/.env.local'
+  'infra/gcp.env'
   '.env'
 )
 

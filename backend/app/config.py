@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     auth_required: bool = True
     firebase_project_id: str = "course-review-explorer-demo"
-    firebase_auth_emulator_host: str = "127.0.0.1:9099"
+    firebase_auth_emulator_host: str = ""
     firebase_credentials_path: str = ""
     auth_dev_token: str = "local-dev-verifier-token"
 

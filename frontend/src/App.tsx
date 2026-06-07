@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { AuthBar } from "./components/AuthBar";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -9,7 +9,8 @@ import { UniversitySearchPage } from "./pages/UniversitySearchPage";
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      {/* HashRouter: required for GCS static hosting (pathname includes /bucket/index.html) */}
+      <HashRouter>
         <AuthBar />
         <Routes>
           <Route path="/" element={<UniversitySearchPage />} />
@@ -17,7 +18,7 @@ export default function App() {
           <Route path="/universities/:uniId" element={<SearchPage />} />
           <Route path="/universities/:uniId/courses/:courseId" element={<DashboardPage />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }
