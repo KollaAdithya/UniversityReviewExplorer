@@ -33,6 +33,9 @@ fi
 if gcloud secrets describe openai-api-key --project "$GCP_PROJECT" >/dev/null 2>&1; then
   SECRET_ARGS+=",OPENAI_API_KEY=openai-api-key:latest"
 fi
+if gcloud secrets describe gemini-api-key --project "$GCP_PROJECT" >/dev/null 2>&1; then
+  SECRET_ARGS+=",GEMINI_API_KEY=gemini-api-key:latest"
+fi
 
 echo "==> Deploying to Cloud Run…"
 # Use @ as delimiter so CORS_ORIGINS may contain commas (gcloud default delimiter)
@@ -44,7 +47,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --service-account "$RUN_SERVICE_ACCOUNT" \
   --add-cloudsql-instances "$CLOUDSQL_CONNECTION" \
   --set-secrets "$SECRET_ARGS" \
-  --set-env-vars "^@^ENVIRONMENT=production@USE_MOCK_ML=false@ML_PROVIDER=groq@ENABLE_BIGQUERY=true@AUTH_REQUIRED=true@GCP_PROJECT=$GCP_PROJECT@GCP_REGION=$GCP_REGION@BIGQUERY_DATASET=$BIGQUERY_DATASET@BIGQUERY_TABLE=$BIGQUERY_TABLE@VERTEX_MODEL=gemini-2.0-flash@FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID@CORS_ORIGINS=$CORS_ORIGINS" \
+  --set-env-vars "^@^ENVIRONMENT=production@USE_MOCK_ML=false@ML_PROVIDER=groq@ENABLE_BIGQUERY=true@AUTH_REQUIRED=true@GCP_PROJECT=$GCP_PROJECT@GCP_REGION=$GCP_REGION@BIGQUERY_DATASET=$BIGQUERY_DATASET@BIGQUERY_TABLE=$BIGQUERY_TABLE@VERTEX_MODEL=gemini-2.5-flash@GEMINI_MODEL=gemini-2.5-flash@FIREBASE_PROJECT_ID=$FIREBASE_PROJECT_ID@CORS_ORIGINS=$CORS_ORIGINS" \
   --project "$GCP_PROJECT"
 
 API_URL="$(gcloud run services describe "$SERVICE_NAME" \

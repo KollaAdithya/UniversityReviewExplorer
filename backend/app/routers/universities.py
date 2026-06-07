@@ -70,17 +70,17 @@ def refresh_university_course_summary(
     course_id: UUID,
     provider: Optional[str] = Query(
         default="default",
-        description="Summary engine: default | openai | groq | ollama",
+        description="Summary engine: default | openai | groq | gemini | ollama",
     ),
     db: Session = Depends(get_db),
 ):
     if not course_service.get_course(db, course_id, university_id=university_id):
         raise HTTPException(status_code=404, detail="Course not found")
     normalized = (provider or "default").lower()
-    if normalized not in ("default", "openai", "groq", "ollama"):
+    if normalized not in ("default", "openai", "groq", "gemini", "ollama"):
         raise HTTPException(
             status_code=400,
-            detail="provider must be one of: default, openai, groq, ollama",
+            detail="provider must be one of: default, openai, groq, gemini, ollama",
         )
     result = course_service.refresh_course_summary(db, course_id, provider=normalized)
     db.commit()

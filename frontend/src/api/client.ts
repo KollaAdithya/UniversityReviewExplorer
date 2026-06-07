@@ -57,7 +57,7 @@ export interface CourseAnalytics {
   avg_rating: number;
 }
 
-export type SummaryProvider = "default" | "openai" | "groq" | "ollama";
+export type SummaryProvider = "default" | "openai" | "groq" | "gemini" | "ollama";
 
 export interface SummaryProviderInfo {
   label: string;
@@ -69,7 +69,7 @@ export interface SummaryProviderInfo {
 export interface CourseSummaryRefresh {
   course_id: string;
   summary: string;
-  source: "ollama" | "groq" | "mock" | "vertex" | string;
+  source: "ollama" | "groq" | "gemini" | "mock" | "vertex" | string;
   requested_provider: SummaryProvider;
   model: string | null;
   fallback_error: string | null;

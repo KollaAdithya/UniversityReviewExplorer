@@ -288,6 +288,13 @@ export function DashboardPage() {
                   summaryProviders?.groq?.available === false ? " (needs API key)" : undefined,
                 )}
               </option>
+              <option value="gemini" disabled={summaryProviders?.gemini?.available === false}>
+                {summaryProviderLabel(
+                  "Gemini (Vertex)",
+                  summaryProviders?.gemini?.model,
+                  summaryProviders?.gemini?.available === false ? " (needs API key)" : undefined,
+                )}
+              </option>
               <option value="default">Default — fast template</option>
             </select>
           </div>

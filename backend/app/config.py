@@ -36,7 +36,10 @@ class Settings(BaseSettings):
 
     gcp_project: str = ""
     gcp_region: str = "us-central1"
-    vertex_model: str = "gemini-2.0-flash"
+    vertex_model: str = "gemini-2.5-flash"
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_timeout_sec: int = 60
     bigquery_dataset: str = "course_reviews_dataset"
     bigquery_table: str = "reviews_analytics"
 

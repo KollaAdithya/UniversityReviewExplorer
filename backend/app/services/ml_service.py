@@ -147,6 +147,8 @@ def _model_for_source(source: str) -> str | None:
         return settings.groq_model
     if source == "ollama":
         return settings.ollama_model
+    if source in ("gemini", "vertex"):
+        return settings.gemini_model
     return None
 
 
@@ -198,6 +200,17 @@ def _generate_summary_for_provider(
         )
         logger.info("ollama summary via %s", settings.ollama_model)
         return summary, "ollama"
+
+    if chosen == "gemini":
+        from app.services import gemini_ml_service
+
+        if not gemini_ml_service.is_available():
+            raise ConnectionError("Gemini API key missing or unreachable")
+        summary = gemini_ml_service.generate_summary(
+            review_texts, positive, neutral, negative, top_topics
+        )
+        logger.info("gemini summary via %s", settings.gemini_model)
+        return summary, "gemini"
 
     raise ValueError(f"Unknown summary provider: {provider}")
 
@@ -291,7 +304,7 @@ def llm_status() -> dict:
 
 
 def summary_providers_status() -> dict:
-    from app.services import groq_ml_service, ollama_ml_service, openai_ml_service
+    from app.services import gemini_ml_service, groq_ml_service, ollama_ml_service, openai_ml_service
 
     return {
         "default": {
@@ -311,6 +324,12 @@ def summary_providers_status() -> dict:
             "description": "Cloud Llama API (free tier)",
             "available": groq_ml_service.is_available(),
             "model": settings.groq_model,
+        },
+        "gemini": {
+            "label": "Gemini",
+            "description": "Google Gemini (Vertex / AI Studio)",
+            "available": gemini_ml_service.is_available(),
+            "model": settings.gemini_model,
         },
         "ollama": {
             "label": "Ollama",
