@@ -4,7 +4,22 @@ Step-by-step guide for deploying the Campus Course Review app to Google Cloud Pl
 
 **Each teammate deploys to their own GCP project.** Nothing in this repo contains real project IDs or API keys. Copy `infra/gcp.env.example` → `infra/gcp.env`, fill in your values locally, and keep that file out of git (it is listed in `.gitignore`).
 
+```bash
+git clone https://github.com/KollaAdithya/UniversityReviewExplorer.git
+cd UniversityReviewExplorer
+```
+
 For technical reference after deploy, see [`GCP_DEPLOYMENT.md`](GCP_DEPLOYMENT.md).
+
+### Which config file is for what?
+
+| File | Use for | Commit to git? |
+|------|---------|----------------|
+| `infra/gcp.env` | **GCP deploy** (`deploy-gcp.sh`, `deploy-backend.sh`, …) | **Never** |
+| `backend/.env` | **Local dev only** (uvicorn on `:8080`) | **Never** |
+| `frontend/.env.local` | **Local dev only** (Vite on `:5174`) | **Never** |
+
+**Do not `source backend/.env` before GCP deploys.** It has localhost CORS and a demo Firebase project that can clash with `infra/gcp.env`.
 
 ---
 
@@ -107,10 +122,15 @@ Or install manually:
 Then log in and set your project (use the **Project ID** from Step 1):
 
 ```bash
+# Optional helper — puts project-local gcloud/npm on PATH (macOS)
+source scripts/use-gcloud.sh
+
 gcloud auth login
 gcloud auth application-default login
 gcloud config set project YOUR_GCP_PROJECT_ID
 ```
+
+> **Linux / Windows:** Install [gcloud](https://cloud.google.com/sdk/docs/install) and [Node.js 18+](https://nodejs.org/) yourself if `install-gcp-tools.sh` does not apply. The deploy commands are the same.
 
 ---
 
@@ -176,6 +196,24 @@ When it finishes, you'll see two URLs:
 
 Open the frontend URL in your browser. Sign in with any email/password — Firebase creates the account on first use.
 
+### After deploy (do not skip)
+
+1. **Firebase authorized domain** — Authentication → Settings → Authorized domains → add `storage.googleapis.com` (required for sign-in on the GCS URL).
+2. **Hard-refresh** the frontend (Cmd+Shift+R / Ctrl+Shift+R) if you redeployed.
+3. **Optional AI summaries** — add a Groq key to Secret Manager (see below); Ollama is local-only and will stay disabled on GCP.
+
+---
+
+## Local dev and GCP in parallel
+
+You can run both at the same time — they do not conflict:
+
+| | Local | GCP |
+|---|-------|-----|
+| Frontend | http://localhost:5174 | GCS URL from deploy output |
+| API | http://localhost:8080 | Cloud Run URL |
+| Config | `backend/.env` + `frontend/.env.local` | `infra/gcp.env` (deploy only) |
+
 ---
 
 ## What costs money (demo estimate)
@@ -224,17 +262,29 @@ On the course dashboard, pick **Groq** in the Summary model dropdown and click *
 
 ---
 
+## Common mistakes
+
+| Mistake | What goes wrong | Fix |
+|---------|-----------------|-----|
+| Sourcing `backend/.env` before GCP deploy | Wrong `GCP_PROJECT`, demo Firebase ID, or broken CORS | Use **only** `set -a && source infra/gcp.env && set +a` |
+| Skipping Firebase authorized domain | Sign-in works locally but fails on GCS URL | Add `storage.googleapis.com` in Firebase Console |
+| Committing `infra/gcp.env` | Leaks project ID + Firebase keys to GitHub | Run `./scripts/check-secrets.sh` before every push |
+| Expecting Ollama on GCP | Summary dropdown shows Ollama greyed out | Use **Groq** or **OpenAI** on Cloud Run (see optional AI section) |
+| Forgetting to export env vars | `GCP_PROJECT: Set GCP_PROJECT` errors | Always `set -a && source infra/gcp.env && set +a` in the same shell |
+
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
 | `GCP_PROJECT: Set GCP_PROJECT` | Run `set -a && source infra/gcp.env && set +a` first |
 | Permission denied | Run `gcloud auth login` and `gcloud auth application-default login` |
+| `gcloud` not found after install | Run `source scripts/use-gcloud.sh` |
 | Login fails on deployed site | Enable Email/Password (Step 3); add `storage.googleapis.com` to Firebase authorized domains |
-| "Failed to fetch" / CORS error | Ensure Cloud Run `CORS_ORIGINS` includes `https://storage.googleapis.com`, then re-run `./scripts/deploy-backend.sh` |
+| "Failed to fetch" / CORS error | Redeploy with `infra/gcp.env` only: `set -a && source infra/gcp.env && set +a && ./scripts/deploy-backend.sh` (script auto-includes `https://storage.googleapis.com`) |
 | Blank page (no styles) | Re-run `./scripts/deploy-frontend.sh` |
 | No reviews showing | Re-run `./scripts/seed-gcp-data.sh` |
 | AI summary shows "Default template" | Add `groq-api-key` secret and redeploy backend |
+| Groq/OpenAI greyed out in dropdown | Create secret in Secret Manager, then `./scripts/deploy-backend.sh` |
 
 View backend logs:
 
@@ -269,6 +319,8 @@ set -a && source infra/gcp.env && set +a
 - [ ] Frontend URL opens in browser
 - [ ] Sign-in works
 - [ ] Course data and reviews visible
+- [ ] `storage.googleapis.com` added to Firebase authorized domains
+- [ ] (Optional) Groq key in Secret Manager + AI summary works
 
 ---
 

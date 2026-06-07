@@ -100,11 +100,15 @@ set -a && source infra/gcp.env && set +a
 Store API keys in Secret Manager (optional but recommended):
 
 ```bash
-echo -n 'gsk_YOUR_KEY' | gcloud secrets create groq-api-key \
-  --data-file=- --replication-policy=automatic --project $GCP_PROJECT
+set -a && source infra/gcp.env && set +a
 
-# Redeploy backend to pick up the secret
-./scripts/deploy-backend.sh
+echo -n 'YOUR_GROQ_KEY' | gcloud secrets create groq-api-key \
+  --data-file=- --replication-policy=automatic --project "$GCP_PROJECT"
+
+# If the secret already exists, add a new version instead:
+# echo -n 'YOUR_GROQ_KEY' | gcloud secrets versions add groq-api-key --data-file=- --project "$GCP_PROJECT"
+
+./scripts/deploy-backend.sh   # picks up groq-api-key / openai-api-key automatically
 ```
 
 ## Firebase production auth
@@ -116,14 +120,11 @@ Users sign in with Email/Password on the deployed site. The backend verifies tok
 ## Updating after code changes
 
 ```bash
-# Backend only
-./scripts/deploy-backend.sh
+set -a && source infra/gcp.env && set +a
 
-# Frontend only
-./scripts/deploy-frontend.sh
-
-# Re-seed data (destructive — reimports CSV)
-./scripts/seed-gcp-data.sh
+./scripts/deploy-backend.sh     # API only
+./scripts/deploy-frontend.sh    # UI only (needs VITE_* from gcp.env)
+./scripts/seed-gcp-data.sh      # Re-seed data (destructive)
 ```
 
 ## Cost estimate (demo / low traffic)
@@ -166,16 +167,45 @@ Use `db-f1-micro` for demos; scale up for production traffic.
 
 Each person uses **their own** GCP/Firebase project — no shared secrets in the repo.
 
+**First time on GCP?** Follow every step in [`GCP_README.md`](GCP_README.md) (account, billing, Firebase).
+
 ```bash
-git clone <repo-url> && cd <repo>
-cp infra/gcp.env.example infra/gcp.env    # fill in locally
+git clone https://github.com/KollaAdithya/UniversityReviewExplorer.git
+cd UniversityReviewExplorer
+chmod +x scripts/*.sh
+cp infra/gcp.env.example infra/gcp.env    # fill in YOUR project + Firebase keys
 ./scripts/install-gcp-tools.sh
+source scripts/use-gcloud.sh              # macOS: gcloud/npm on PATH
 set -a && source infra/gcp.env && set +a
+gcloud config set project "$GCP_PROJECT"
 ./scripts/verify-gcp-prereqs.sh
 ./scripts/deploy-gcp.sh
 ```
 
+After deploy: Firebase → Authentication → Settings → **Authorized domains** → add `storage.googleapis.com`.
+
 Before `git push`, run `./scripts/check-secrets.sh`. Never commit `infra/gcp.env`, `backend/.env`, or `frontend/.env.local`.
+
+### Config files (do not mix them up)
+
+| File | Purpose |
+|------|---------|
+| `infra/gcp.env` | GCP deploy scripts only |
+| `backend/.env` | Local uvicorn only — **never source before `./scripts/deploy-*.sh`** |
+| `frontend/.env.local` | Local Vite dev server only |
+
+All GCP deploy/update commands must start with:
+
+```bash
+set -a && source infra/gcp.env && set +a
+```
+
+### Common mistakes
+
+- **`backend/.env` sourced before deploy** — can set empty `GCP_PROJECT` or localhost-only CORS. Use `infra/gcp.env` only.
+- **Missing `storage.googleapis.com`** in Firebase — sign-in fails on the GCS frontend URL.
+- **Ollama on GCP** — not supported on Cloud Run; use Groq/OpenAI via Secret Manager.
+- **Pushing secrets** — run `./scripts/check-secrets.sh` before every `git push`.
 
 ## Security checklist
 

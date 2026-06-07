@@ -36,8 +36,8 @@ Optional (only if you want those features):
 ### 2. Get the code
 
 ```bash
-git clone <your-repo-url> appgroup
-cd appgroup
+git clone https://github.com/KollaAdithya/UniversityReviewExplorer.git
+cd UniversityReviewExplorer
 ```
 
 ### 3. Start the backend (API)
@@ -205,8 +205,13 @@ Each developer deploys to **their own** GCP project. The repo ships templates on
 
 | Guide | When to use |
 |-------|-------------|
-| [`docs/GCP_README.md`](docs/GCP_README.md) | First time on GCP — account, billing, Firebase, step-by-step deploy |
+| [`docs/GCP_README.md`](docs/GCP_README.md) | **Start here** — account, billing, Firebase, step-by-step deploy, common mistakes |
 | [`docs/GCP_DEPLOYMENT.md`](docs/GCP_DEPLOYMENT.md) | Technical reference — resources created, updates, troubleshooting |
+
+```bash
+git clone https://github.com/KollaAdithya/UniversityReviewExplorer.git
+cd UniversityReviewExplorer
+```
 
 **Quick start** (billing + Firebase project required):
 
@@ -214,13 +219,19 @@ Each developer deploys to **their own** GCP project. The repo ships templates on
 chmod +x scripts/*.sh
 ./scripts/install-gcp-tools.sh            # gcloud + Python deps (local .cache/)
 cp infra/gcp.env.example infra/gcp.env   # YOUR project + Firebase keys — never commit
-set -a && source infra/gcp.env && set +a
+source scripts/use-gcloud.sh             # macOS: ensure gcloud/npm on PATH
+set -a && source infra/gcp.env && set +a # GCP deploy env — do NOT source backend/.env
 gcloud config set project "$GCP_PROJECT"
 ./scripts/verify-gcp-prereqs.sh         # fix anything marked ✗
 ./scripts/deploy-gcp.sh                   # ~15–20 min: SQL, Cloud Run, GCS, seed data
 ```
 
-After deploy: add **`storage.googleapis.com`** to Firebase → Authentication → Settings → Authorized domains (required for sign-in on the GCS URL).
+After deploy:
+
+1. Add **`storage.googleapis.com`** to Firebase → Authentication → Settings → Authorized domains.
+2. (Optional) Add a Groq key to Secret Manager for AI summaries — see [`docs/GCP_README.md`](docs/GCP_README.md).
+
+**Local + GCP in parallel:** use `backend/.env` / `frontend/.env.local` for localhost; use `infra/gcp.env` only when running deploy scripts. See **Common mistakes** in `GCP_README.md`.
 
 **Architecture on GCP:**
 
@@ -235,7 +246,13 @@ After deploy: add **`storage.googleapis.com`** to Firebase → Authentication �
 
 ## Environment
 
-Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and add your keys locally. Include frontend origins in `CORS_ORIGINS`.
+| File | When |
+|------|------|
+| `backend/.env` | Local API (`uvicorn` on `:8080`) — copy from [`backend/.env.example`](backend/.env.example) |
+| `frontend/.env.local` | Local UI (`npm run dev` on `:5174`) — copy from [`frontend/.env.example`](frontend/.env.example) |
+| `infra/gcp.env` | GCP deploy only — copy from [`infra/gcp.env.example`](infra/gcp.env.example) |
+
+Do not use `backend/.env` for Cloud Run deploys.
 
 ### Secrets & GitHub
 
