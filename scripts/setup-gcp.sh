@@ -109,14 +109,17 @@ gsutil mb -p "$GCP_PROJECT" -l "$GCP_REGION" "gs://$FRONTEND_BUCKET" 2>/dev/null
 gsutil uniformbucketlevelaccess set on "gs://$FRONTEND_BUCKET" 2>/dev/null || true
 
 echo ""
+echo "==> Firebase Auth (Email/Password + authorized domains)"
+"$ROOT/scripts/setup-firebase-auth.sh"
+
+echo ""
 echo "Setup complete."
 echo "  Cloud SQL:  $SQL_INSTANCE"
 echo "  Connection: $CLOUDSQL_CONNECTION"
 echo "  Frontend:   gs://$FRONTEND_BUCKET"
 echo ""
 echo "Next steps:"
-echo "  1. Create a Firebase project (or link existing) to $GCP_PROJECT"
-echo "  2. Enable Email/Password auth in Firebase Console"
-echo "  3. Add optional secrets:"
+echo "  1. Register a Firebase web app in Console if you have not already (for VITE_FIREBASE_* keys)"
+echo "  2. Add optional secrets:"
 echo "       echo -n 'gsk_...' | gcloud secrets create groq-api-key --data-file=- --project $GCP_PROJECT"
-echo "  4. Deploy: ./scripts/deploy-gcp.sh"
+echo "  3. Deploy: ./scripts/deploy-gcp.sh"

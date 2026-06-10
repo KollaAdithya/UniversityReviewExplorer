@@ -15,12 +15,16 @@ FRONTEND_URL="https://storage.googleapis.com/${FRONTEND_BUCKET}/index.html"
 echo "==> Building frontend for production…"
 cd "$ROOT/frontend"
 npm install
+# frontend/.env.local sets VITE_FIREBASE_AUTH_EMULATOR_HOST for local dev; Vite loads it
+# during `npm run build` and emulator tokens break production auth (no JWT "kid" claim).
+unset VITE_FIREBASE_AUTH_EMULATOR_HOST
 # Absolute bucket prefix — survives GCS URL shape (./assets can resolve wrong in some browsers)
 VITE_BASE="/${FRONTEND_BUCKET}/" \
 VITE_API_BASE_URL="$VITE_API_BASE_URL" \
 VITE_FIREBASE_API_KEY="$VITE_FIREBASE_API_KEY" \
 VITE_FIREBASE_AUTH_DOMAIN="$VITE_FIREBASE_AUTH_DOMAIN" \
 VITE_FIREBASE_PROJECT_ID="$VITE_FIREBASE_PROJECT_ID" \
+VITE_FIREBASE_AUTH_EMULATOR_HOST= \
 npm run build
 
 echo "==> Uploading to gs://${FRONTEND_BUCKET}..."

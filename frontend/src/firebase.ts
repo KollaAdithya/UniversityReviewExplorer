@@ -10,8 +10,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
+// Never use the auth emulator in production builds — emulator JWTs lack "kid" and fail backend verify.
 const emulatorHost = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST;
-if (emulatorHost) {
+if (import.meta.env.DEV && emulatorHost) {
   const host = emulatorHost.startsWith("http") ? emulatorHost : `http://${emulatorHost}`;
   connectAuthEmulator(auth, host, { disableWarnings: true });
 }
