@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * One screenshot per feature bullet — deployed GCS frontend (+ API for backend-only features).
- * Each screenshot is annotated with red circles and arrows highlighting the described feature.
+ * Each screenshot gets at most one subtle red arrow or circle on the key UI element.
  */
 import { chromium } from "playwright";
 import { mkdir, readdir, readFile, unlink, writeFile } from "node:fs/promises";
@@ -44,125 +44,85 @@ const FEATURES = [
   { id: "26-adithya-cross-university-top-topics-api", owner: "Adithya", line: "Cross-university top topics — browse and filter top review topics across all schools" },
   { id: "27-adithya-data-catalog", owner: "Adithya", line: "Data catalog — public dataset provenance, licenses, and live database counts" },
   { id: "28-adithya-professor-analytics", owner: "Adithya", line: "Professor analytics — per-instructor sentiment, ratings, and top topics" },
+  { id: "29-adithya-professor-search", owner: "Adithya", line: "Professor search — filter instructors by name on the university courses page" },
+  { id: "30-adithya-insights-navigation", owner: "Adithya", line: "Insights navigation — hub linking Top topics, BigQuery, Data catalog, and Import admin" },
+  { id: "31-jeny-single-course-search", owner: "Jeny", line: "Single-course search result — snapshot card when search narrows to one course (e.g. HEB101)" },
+  { id: "32-adithya-professor-directory", owner: "Adithya", line: "Professor directory — browse instructors with review counts and sentiment scores" },
+  { id: "33-kanika-review-filters", owner: "Kanika", line: "Review filters — filter explorer by semester, sentiment, and professor" },
 ];
 
 function featureById(id) {
   return FEATURES.find((f) => f.id === id);
 }
 
-/** Red circle + optional arrow per selector. style: "circle" | "arrow" | "both" */
+/** One highlight per screenshot — style: "circle" | "arrow" | "both" (prefer arrow). */
 const HIGHLIGHTS = {
-  "01-jeny-university-search": [
-    { selector: "input[type='search']", style: "both" },
-    { selector: ".grid.gap-4.md\\:grid-cols-2 a", style: "circle" },
-  ],
-  "02-jeny-university-course-search": [
-    { selector: "input[type='search']", style: "both" },
-    { selector: "table tbody tr", style: "circle" },
-  ],
-  "03-jeny-multi-university-support": [
-    { selector: ".grid.gap-4.md\\:grid-cols-2 > div", style: "circle" },
-  ],
-  "04-jeny-anonymous-browsing": [
-    { selector: "nav.app-nav a[href*='login']", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Key metrics'))", style: "circle" },
-    { selector: "section.section-card:has(h2:has-text('Sentiment distribution'))", style: "circle" },
-  ],
+  "01-jeny-university-search": [{ selector: "input[type='search']", style: "arrow" }],
+  "02-jeny-university-course-search": [{ selector: "input[type='search']", style: "arrow" }],
+  "03-jeny-multi-university-support": [{ selector: ".grid.gap-4.md\\:grid-cols-2", style: "circle" }],
+  "04-jeny-anonymous-browsing": [{ selector: "nav.app-nav a[href*='login']", style: "arrow" }],
   "05-kanika-course-analytics-dashboard": [
-    { selector: "section.section-card:has(h2:has-text('Key metrics')) .grid", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Key metrics'))", style: "circle" },
   ],
   "06-kanika-sentiment-breakdown": [
-    { selector: "section.section-card:has(h2:has-text('Sentiment distribution')) .recharts-responsive-container", style: "both" },
+    { selector: "section.section-card:has(h2:has-text('Sentiment distribution'))", style: "circle" },
   ],
   "07-kanika-topic-analysis": [
-    { selector: "section.section-card:has(h2:has-text('Topic distribution')) .recharts-responsive-container", style: "both" },
+    { selector: "section.section-card:has(h2:has-text('Topic distribution'))", style: "circle" },
   ],
   "08-kanika-semester-trends": [
-    { selector: "section.section-card:has(h2:has-text('Semester-over-semester')) .h-80", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Semester-over-semester')) .stat-card", style: "circle", all: true },
+    { selector: "section.section-card:has(h2:has-text('Semester-over-semester'))", style: "circle" },
   ],
   "09-kanika-course-comparison": [
-    { selector: "section.section-card:has(h2:has-text('Course comparison')) table, section.section-card:has(h2:has-text('Course comparison')) canvas", style: "both" },
+    { selector: "section.section-card:has(h2:has-text('Course comparison'))", style: "circle" },
   ],
   "10-kanika-review-explorer": [
-    { selector: "section.section-card:has(h2:has-text('Review explorer')) input[placeholder='Search review text…']", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Review explorer')) select", style: "circle", all: true },
-    { selector: "section.section-card:has(h2:has-text('Review explorer')) article.review-card", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Review explorer'))", style: "circle" },
   ],
-  "11-kanika-review-text-search": [
-    { selector: "input[placeholder='Search review text…']", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Review explorer')) article.review-card", style: "circle" },
-  ],
+  "11-kanika-review-text-search": [{ selector: "input[placeholder='Search review text…']", style: "arrow" }],
   "12-sagarikha-submit-course-reviews": [
-    { selector: "section.section-card:has(h2:has-text('Submit a review')) label:has-text('Your rating') + div", style: "circle" },
-    { selector: "section.section-card:has(h2:has-text('Submit a review')) textarea", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Submit a review')) button[type='submit']", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Submit a review')) textarea", style: "arrow" },
   ],
-  "13-sagarikha-sign-in": [
-    { selector: "form.section-card input[type='email']", style: "circle" },
-    { selector: "form.section-card input[type='password']", style: "circle" },
-    { selector: "form.section-card button[type='submit']", style: "both" },
-  ],
-  "14-sagarikha-sign-up": [
-    { selector: "form.section-card button[type='button']", style: "both" },
-    { selector: "form.section-card button[type='submit']", style: "circle" },
-  ],
-  "15-sagarikha-account-creation": [
-    { selector: "form.section-card input[type='email']", style: "circle" },
-    { selector: "form.section-card input[type='password']", style: "circle" },
-    { selector: "form.section-card button[type='submit']", style: "both" },
-  ],
+  "13-sagarikha-sign-in": [{ selector: "form.section-card button[type='submit']", style: "arrow" }],
+  "14-sagarikha-sign-up": [{ selector: "form.section-card button[type='button']", style: "arrow" }],
+  "15-sagarikha-account-creation": [{ selector: "form.section-card button[type='submit']", style: "arrow" }],
   "16-sagarikha-auth-gated-submission": [
-    { selector: "section.section-card:has(h2:has-text('Submit a review')) a.btn-primary", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Submit a review')) .rounded-2xl.border-amber", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Submit a review')) a.btn-primary", style: "arrow" },
   ],
-  "17-sagarikha-user-profiles": [
-    { selector: "nav.app-nav span.text-brand-100", style: "both" },
-    { selector: "nav.app-nav button", style: "circle" },
-  ],
+  "17-sagarikha-user-profiles": [{ selector: "nav.app-nav span.text-brand-100", style: "arrow" }],
   "18-veerish-ai-course-summaries": [
-    { selector: "section.section-card:has(h2:has-text('AI summary')) button:has-text('Generate summary')", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('AI summary')) .rounded-xl.border", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('AI summary')) button:has-text('Generate summary')", style: "arrow" },
   ],
-  "19-veerish-multiple-summary-providers": [
-    { selector: "#summary-provider", style: "both" },
-  ],
-  "20-veerish-live-review-nlp": [
-    { selector: "article.review-card .rounded-full", style: "circle" },
-    { selector: "article.review-card .flex.flex-wrap.gap-1\\.5", style: "both" },
-  ],
+  "19-veerish-multiple-summary-providers": [{ selector: "#summary-provider", style: "arrow" }],
+  "20-veerish-live-review-nlp": [{ selector: "article.review-card .flex.flex-wrap.gap-1\\.5", style: "arrow" }],
   "21-veerish-automatic-fallback": [
-    { selector: "section.section-card:has(h2:has-text('AI summary')) .section-subtitle", style: "both" },
     { selector: "section.section-card:has(h2:has-text('AI summary')) .rounded-xl.border", style: "circle" },
   ],
-  "22-veerish-provider-availability-ui": [
-    { selector: "#summary-provider", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('AI summary')) label", style: "circle" },
-  ],
-  "23-adithya-real-rmp-dataset": [
-    { selector: ".hero-panel h1", style: "circle" },
-    { selector: ".hero-panel .flex.flex-wrap.gap-3", style: "both" },
-    { selector: "input[type='search']", style: "circle" },
-  ],
+  "22-veerish-provider-availability-ui": [{ selector: "#summary-provider", style: "arrow" }],
+  "23-adithya-real-rmp-dataset": [{ selector: ".hero-panel .flex.flex-wrap.gap-3", style: "circle" }],
   "24-adithya-bulk-data-import-pipeline": [
-    { selector: "section.section-card:has(h2:has-text('Actions'))", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Import audit log')) table tbody tr", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Import audit log'))", style: "circle" },
   ],
   "25-adithya-bigquery-analytics-sync": [
-    { selector: "section.section-card:has(h2:has-text('Warehouse status'))", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('Sentiment by university')) .recharts-responsive-container", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Warehouse status'))", style: "circle" },
   ],
   "26-adithya-cross-university-top-topics-api": [
-    { selector: "input[placeholder='Filter universities…']", style: "both" },
-    { selector: "section.section-card:has(h2:has-text('By university')) table tbody tr", style: "circle" },
+    { selector: "input[placeholder='Filter universities…']", style: "arrow" },
   ],
   "27-adithya-data-catalog": [
-    { selector: "section.section-card:has(h2:has-text('Live database'))", style: "both" },
-    { selector: "section.section-card pre code", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Live database'))", style: "circle" },
   ],
-  "28-adithya-professor-analytics": [
-    { selector: ".stat-card", style: "both", all: true },
-    { selector: "section.section-card:has(h2:has-text('Top topics'))", style: "circle" },
+  "28-adithya-professor-analytics": [{ selector: ".stat-card", style: "circle" }],
+  "29-adithya-professor-search": [
+    { selector: 'section.section-card:has(h2:has-text("Professor analytics")) input[type="search"]', style: "arrow" },
+  ],
+  "30-adithya-insights-navigation": [{ selector: "nav.mb-8.flex.flex-wrap.gap-2", style: "circle" }],
+  "31-jeny-single-course-search": [{ selector: "input.input-field.mb-8", style: "arrow" }],
+  "32-adithya-professor-directory": [
+    { selector: 'section.section-card:has(h2:has-text("Professor analytics"))', style: "circle" },
+  ],
+  "33-kanika-review-filters": [
+    { selector: 'section.section-card:has(h2:has-text("Review explorer")) .mb-4.grid', style: "circle" },
   ],
 };
 
@@ -181,7 +141,7 @@ async function clearOutputDir() {
 
 async function collectHighlightBoxes(page, highlights = []) {
   const items = [];
-  for (const h of highlights) {
+  for (const h of highlights.slice(0, 1)) {
     if (h.box) {
       items.push({ style: h.style ?? "both", box: h.box });
       continue;
@@ -346,13 +306,13 @@ async function drawHighlights(page, highlights = []) {
     marker.setAttribute("orient", "auto");
     const head = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
     head.setAttribute("points", "0,0 12,6 0,12");
-    head.setAttribute("fill", "#ef4444");
+    head.setAttribute("fill", "#dc2626");
     marker.appendChild(head);
     defs.appendChild(marker);
     svg.appendChild(defs);
 
     for (const { box, style } of data) {
-      const pad = 12;
+      const pad = 8;
       const cx = box.x + box.width / 2;
       const cy = box.y + box.height / 2;
       const rx = box.width / 2 + pad;
@@ -365,23 +325,25 @@ async function drawHighlights(page, highlights = []) {
         ellipse.setAttribute("rx", String(rx));
         ellipse.setAttribute("ry", String(ry));
         ellipse.setAttribute("fill", "none");
-        ellipse.setAttribute("stroke", "#ef4444");
-        ellipse.setAttribute("stroke-width", "3.5");
+        ellipse.setAttribute("stroke", "#dc2626");
+        ellipse.setAttribute("stroke-width", "2.5");
+        ellipse.setAttribute("opacity", "0.92");
         svg.appendChild(ellipse);
       }
 
       if (style === "arrow" || style === "both") {
-        const fromX = Math.max(20, box.x - Math.max(70, rx + 20));
-        const fromY = Math.max(20, box.y - Math.max(50, ry));
-        const toX = box.x + Math.min(pad * 2, box.width * 0.25);
-        const toY = box.y + Math.min(pad * 2, box.height * 0.25);
+        const fromX = Math.max(24, box.x - Math.max(56, rx + 12));
+        const fromY = Math.max(24, box.y - Math.max(40, ry));
+        const toX = box.x + Math.min(pad * 2, box.width * 0.2);
+        const toY = box.y + Math.min(pad * 2, box.height * 0.2);
         const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         line.setAttribute("x1", String(fromX));
         line.setAttribute("y1", String(fromY));
         line.setAttribute("x2", String(toX));
         line.setAttribute("y2", String(toY));
-        line.setAttribute("stroke", "#ef4444");
-        line.setAttribute("stroke-width", "3.5");
+        line.setAttribute("stroke", "#dc2626");
+        line.setAttribute("stroke-width", "2.5");
+        line.setAttribute("opacity", "0.92");
         line.setAttribute("marker-end", "url(#shot-arrow)");
         svg.appendChild(line);
       }
@@ -473,13 +435,16 @@ async function main() {
   const course = courses[0];
   const dash = `${BASE}/universities/${uni.university_id}/courses/${course.course_id}`;
   const uniPage = `${BASE}/universities/${uni.university_id}`;
+  const brandeisPage = `${BASE}/universities/be3094b1-9c58-4239-9f7a-e5ee1fbdc076`;
 
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-  // Jeny
+  // Jeny — home: type a search so filtered results prove search works
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(1500);
+  await page.fill('input[type="search"]', "Florida");
+  await page.waitForTimeout(1200);
   await shot(page, "01-jeny-university-search", async (p, file) => {
     await p.screenshot({ path: file, clip: { x: 0, y: 0, width: 1440, height: 820 } });
   });
@@ -490,6 +455,30 @@ async function main() {
   await page.waitForTimeout(900);
   await shot(page, "02-jeny-university-course-search", async (p, file) => {
     await p.screenshot({ path: file, clip: { x: 0, y: 120, width: 1440, height: 700 } });
+  });
+
+  await page.goto(brandeisPage, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(1500);
+  const courseSearch = page.locator("input.input-field.mb-8").first();
+  await courseSearch.fill("heb101");
+  await page.waitForTimeout(1500);
+  await shot(page, "31-jeny-single-course-search", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 720 } });
+  });
+
+  await courseSearch.fill("");
+  await page.waitForTimeout(1500);
+  const professorSection = page.locator('section.section-card:has(h2:has-text("Professor analytics"))');
+  await professorSection.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await shot(page, "32-adithya-professor-directory", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 280, width: 1440, height: 520 } });
+  });
+
+  await page.locator('section.section-card:has(h2:has-text("Professor analytics")) input[type="search"]').fill("Robert");
+  await page.waitForTimeout(1500);
+  await shot(page, "29-adithya-professor-search", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 280, width: 1440, height: 520 } });
   });
 
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
@@ -520,6 +509,10 @@ async function main() {
   await page.goto(dash, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(2000);
   await shot(page, "10-kanika-review-explorer", card(page, "Review explorer"));
+
+  await card(page, "Review explorer").locator("select.select-field").nth(1).selectOption("negative");
+  await page.waitForTimeout(1000);
+  await shot(page, "33-kanika-review-filters", card(page, "Review explorer"));
 
   await page.getByPlaceholder("Search review text…").fill("tough");
   await page.waitForTimeout(500);
@@ -654,6 +647,10 @@ async function main() {
 
   await page.goto(`${BASE}/analytics/top-topics`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(2000);
+  await shot(page, "30-adithya-insights-navigation", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 0, width: 1440, height: 340 } });
+  });
+
   await shot(page, "26-adithya-cross-university-top-topics-api", async (p, file) => {
     await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
   });
@@ -685,9 +682,9 @@ ${FEATURES.map((f, i) => `| ${i + 1} | ${f.id}.png | ${f.owner} | ${f.line} |`).
 
 Sample route: ${uni.name} → ${course.course_code}
 
-All screenshots include red circles and arrows highlighting the described feature.
+All screenshots include at most one subtle red arrow or circle on the featured UI element.
 
-Adithya's contributions (#23–28) use the live deployed Insights UI and include a contributor badge with name + feature description.
+Adithya's contributions include a contributor badge with name + feature description on screenshots #23–32.
 
 Re-capture: \`export PATH="$PWD/.cache/node/bin:$PATH" && NODE_PATH="$PWD/docs/screenshots/node_modules" node scripts/capture-feature-screenshots.mjs\`
 `,

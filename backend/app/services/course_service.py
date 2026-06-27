@@ -305,7 +305,7 @@ class ReviewService:
         if semester:
             q = q.filter(CourseOffering.semester.ilike(f"%{semester.strip()}%"))
         if professor:
-            q = q.join(Professor).filter(Professor.professor_name.ilike(f"%{professor.strip()}%"))
+            q = q.filter(Professor.professor_name.ilike(f"%{professor.strip()}%"))
         if sentiment:
             q = q.filter(SentimentAnalysis.sentiment == sentiment.lower())
 

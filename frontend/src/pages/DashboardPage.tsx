@@ -67,10 +67,22 @@ export function DashboardPage() {
   );
 
   const filteredReviews = useMemo(() => {
-    if (!search.trim()) return reviews;
-    const q = search.trim().toLowerCase();
-    return reviews.filter((r) => r.review_text.toLowerCase().includes(q));
-  }, [reviews, search]);
+    let list = reviews;
+    if (semester) {
+      list = list.filter((r) => r.semester?.toLowerCase() === semester.toLowerCase());
+    }
+    if (professor) {
+      list = list.filter((r) => r.professor_name === professor);
+    }
+    if (sentiment) {
+      list = list.filter((r) => r.sentiment?.toLowerCase() === sentiment.toLowerCase());
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter((r) => r.review_text.toLowerCase().includes(q));
+    }
+    return list;
+  }, [reviews, semester, professor, sentiment, search]);
 
   const displayTopics: TopTopicItem[] = useMemo(() => {
     if (analytics?.topic_breakdown?.length) return analytics.topic_breakdown;
@@ -112,11 +124,7 @@ export function DashboardPage() {
     if (!uniId || !courseId) return;
     const [analyticsData, reviewData, offeringData, trendData] = await Promise.all([
       api.getAnalytics(uniId, courseId),
-      api.getReviews(uniId, courseId, {
-        semester,
-        professor,
-        sentiment,
-      }),
+      api.getReviews(uniId, courseId),
       api.getOfferings(uniId, courseId),
       api.getSemesterTrends(uniId, courseId),
     ]);
@@ -141,7 +149,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadDashboard().catch((err: Error) => setError(err.message));
-  }, [uniId, courseId, semester, professor, sentiment]);
+  }, [uniId, courseId]);
 
   useEffect(() => {
     setSummarySource(null);
