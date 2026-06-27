@@ -39,10 +39,16 @@ const FEATURES = [
   { id: "21-veerish-automatic-fallback", owner: "Veerish", line: "Automatic fallback — if an AI provider is down or unconfigured, falls back to mock/template" },
   { id: "22-veerish-provider-availability-ui", owner: "Veerish", line: "Provider availability UI — dashboard dropdown shows which AI providers are currently available" },
   { id: "23-adithya-real-rmp-dataset", owner: "Adithya", line: "Real RMP dataset — ~1,000 real RateMyProfessors-style reviews imported from public research data" },
-  { id: "24-adithya-bulk-data-import-pipeline", owner: "Adithya", line: "Bulk data import pipeline — scripts to download and import CSV data (RMP sample or larger Mendeley corpus)" },
-  { id: "25-adithya-bigquery-analytics-sync", owner: "Adithya", line: "BigQuery analytics sync — new reviews optionally streamed to BigQuery on GCP" },
+  { id: "24-adithya-bulk-data-import-pipeline", owner: "Adithya", line: "Bulk data import pipeline — import admin console with audit log and CSV import triggers" },
+  { id: "25-adithya-bigquery-analytics-sync", owner: "Adithya", line: "BigQuery analytics sync — live warehouse dashboard with row counts and cross-university charts" },
   { id: "26-adithya-cross-university-top-topics-api", owner: "Adithya", line: "Cross-university top topics — browse and filter top review topics across all schools" },
+  { id: "27-adithya-data-catalog", owner: "Adithya", line: "Data catalog — public dataset provenance, licenses, and live database counts" },
+  { id: "28-adithya-professor-analytics", owner: "Adithya", line: "Professor analytics — per-instructor sentiment, ratings, and top topics" },
 ];
+
+function featureById(id) {
+  return FEATURES.find((f) => f.id === id);
+}
 
 /** Red circle + optional arrow per selector. style: "circle" | "arrow" | "both" */
 const HIGHLIGHTS = {
@@ -139,17 +145,24 @@ const HIGHLIGHTS = {
     { selector: "input[type='search']", style: "circle" },
   ],
   "24-adithya-bulk-data-import-pipeline": [
-    { selector: "#import-terminal", style: "both" },
-    { selector: "#import-script", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Actions'))", style: "both" },
+    { selector: "section.section-card:has(h2:has-text('Import audit log')) table tbody tr", style: "circle" },
   ],
   "25-adithya-bigquery-analytics-sync": [
-    { selector: "#bq-schema", style: "circle" },
-    { selector: "#bq-sync-code", style: "both" },
-    { selector: "#bq-trigger", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('Warehouse status'))", style: "both" },
+    { selector: "section.section-card:has(h2:has-text('Sentiment by university')) .recharts-responsive-container", style: "circle" },
   ],
   "26-adithya-cross-university-top-topics-api": [
     { selector: "input[placeholder='Filter universities…']", style: "both" },
-    { selector: "table tbody tr", style: "circle" },
+    { selector: "section.section-card:has(h2:has-text('By university')) table tbody tr", style: "circle" },
+  ],
+  "27-adithya-data-catalog": [
+    { selector: "section.section-card:has(h2:has-text('Live database'))", style: "both" },
+    { selector: "section.section-card pre code", style: "circle" },
+  ],
+  "28-adithya-professor-analytics": [
+    { selector: ".stat-card", style: "both", all: true },
+    { selector: "section.section-card:has(h2:has-text('Top topics'))", style: "circle" },
   ],
 };
 
@@ -380,13 +393,38 @@ async function drawHighlights(page, highlights = []) {
 }
 
 async function clearHighlights(page) {
-  await page.evaluate(() => document.getElementById("__shot_annot__")?.remove());
+  await page.evaluate(() => {
+    document.getElementById("__shot_annot__")?.remove();
+    document.getElementById("__contributor_badge__")?.remove();
+  });
+}
+
+async function drawContributorBadge(page, feature) {
+  if (!feature?.owner) return;
+  await page.evaluate(
+    ({ owner, line }) => {
+      document.getElementById("__contributor_badge__")?.remove();
+      const badge = document.createElement("div");
+      badge.id = "__contributor_badge__";
+      badge.innerHTML = `<strong>${owner}</strong><span>${line}</span>`;
+      badge.style.cssText =
+        "position:fixed;left:20px;bottom:20px;z-index:2147483646;max-width:min(520px,calc(100vw - 40px));padding:12px 16px;border-radius:14px;background:rgba(15,23,42,.92);color:#f8fafc;font:600 13px/1.35 Inter,system-ui,sans-serif;box-shadow:0 10px 30px rgba(15,23,42,.25);pointer-events:none;";
+      const strong = badge.querySelector("strong");
+      strong.style.cssText = "display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#93c5fd;margin-bottom:4px;";
+      const span = badge.querySelector("span");
+      span.style.cssText = "display:block;font-weight:500;color:#e2e8f0;font-size:13px;";
+      document.body.appendChild(badge);
+    },
+    { owner: feature.owner, line: feature.line },
+  );
 }
 
 async function shot(page, id, target, highlights) {
   const file = path.join(OUT, `${id}.png`);
   const marks = highlights ?? HIGHLIGHTS[id] ?? [];
+  const feature = featureById(id);
 
+  await drawContributorBadge(page, feature?.owner === "Adithya" ? feature : null);
   await drawHighlights(page, marks);
   await page.waitForTimeout(250);
 
@@ -589,31 +627,55 @@ async function main() {
     });
   });
 
-  // Adithya
+  // Adithya — live Insights pages (user stays signed in from Sagarikha section)
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(1200);
   await shot(page, "23-adithya-real-rmp-dataset", async (p, file) => {
     await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 520 } });
   });
 
-  await captureImportPipelineShot(page);
-  await captureBigQueryShot(page);
+  await page.goto(`${BASE}/data/catalog`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(2000);
+  await shot(page, "27-adithya-data-catalog", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
+  });
 
-  try {
-    await page.goto(`${BASE}/analytics/top-topics`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.goto(`${BASE}/admin/imports`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(2000);
+  await shot(page, "24-adithya-bulk-data-import-pipeline", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
+  });
+
+  await page.goto(`${BASE}/analytics/bigquery`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(2500);
+  await shot(page, "25-adithya-bigquery-analytics-sync", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
+  });
+
+  await page.goto(`${BASE}/analytics/top-topics`, { waitUntil: "networkidle", timeout: 60000 });
+  await page.waitForTimeout(2000);
+  await shot(page, "26-adithya-cross-university-top-topics-api", async (p, file) => {
+    await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
+  });
+
+  const profList = await apiFetch(`/api/v1/universities/${uni.university_id}/professors`);
+  const professor = profList.find((p) => p.review_count >= 2) ?? profList[0];
+  if (professor) {
+    await page.goto(
+      `${BASE}/universities/${uni.university_id}/professors/${professor.professor_id}`,
+      { waitUntil: "networkidle", timeout: 60000 },
+    );
     await page.waitForTimeout(2000);
-    await shot(page, "26-adithya-cross-university-top-topics-api", async (p, file) => {
-      await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 780 } });
+    await shot(page, "28-adithya-professor-analytics", async (p, file) => {
+      await p.screenshot({ path: file, clip: { x: 0, y: 88, width: 1440, height: 820 } });
     });
-  } catch {
-    await captureTopTopicsShot(page);
   }
 
   await browser.close();
 
   await writeFile(
     path.join(OUT, "README.md"),
-    `# Feature screenshots (26 — one per bullet)
+    `# Feature screenshots (${FEATURES.length} — one per bullet)
 
 App: ${BASE}/
 
@@ -625,7 +687,7 @@ Sample route: ${uni.name} → ${course.course_code}
 
 All screenshots include red circles and arrows highlighting the described feature.
 
-Note: items 24–26 are styled documentation captures (import pipeline, BigQuery sync, top-topics API) — no dedicated frontend UI yet.
+Adithya's contributions (#23–28) use the live deployed Insights UI and include a contributor badge with name + feature description.
 
 Re-capture: \`export PATH="$PWD/.cache/node/bin:$PATH" && NODE_PATH="$PWD/docs/screenshots/node_modules" node scripts/capture-feature-screenshots.mjs\`
 `,

@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { AuthBar } from "./components/AuthBar";
+import { UpdateBanner } from "./components/UpdateBanner";
 import { BigQueryDashboardPage } from "./pages/BigQueryDashboardPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DataCatalogPage } from "./pages/DataCatalogPage";
@@ -17,6 +18,7 @@ export default function App() {
       {/* HashRouter: required for GCS static hosting (pathname includes /bucket/index.html) */}
       <HashRouter>
         <AuthBar />
+        <UpdateBanner />
         <Routes>
           <Route path="/" element={<UniversitySearchPage />} />
           <Route path="/login" element={<LoginPage />} />

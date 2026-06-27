@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.config import settings
@@ -25,10 +26,13 @@ class CourseService:
             q = q.filter(Course.university_id == university_id)
         if query:
             pattern = f"%{query.strip()}%"
+            department = func.coalesce(Course.department, "")
             q = q.filter(
-                (Course.course_code.ilike(pattern))
-                | (Course.course_name.ilike(pattern))
-                | (Course.department.ilike(pattern))
+                or_(
+                    Course.course_code.ilike(pattern),
+                    Course.course_name.ilike(pattern),
+                    department.ilike(pattern),
+                )
             )
         return q.order_by(Course.course_code).all()
 
