@@ -125,3 +125,18 @@ class CourseSummary(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     course: Mapped["Course"] = relationship(back_populates="summary")
+
+
+class ImportRun(Base):
+    __tablename__ = "import_run"
+
+    run_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    source_file: Mapped[str] = mapped_column(String(500), nullable=False)
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="running")
+    rows_imported: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    rows_skipped: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    universities_created: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    triggered_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

@@ -6,7 +6,7 @@ import { PageShell } from "../components/ui/PageShell";
 export function LoginPage() {
   const { user, loading, signIn, signUp } = useAuth();
   const location = useLocation();
-  const [email, setEmail] = useState("student@demo.edu");
+  const [email, setEmail] = useState("adithyakolla@demo.edu");
   const [password, setPassword] = useState("demo123456");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [error, setError] = useState<string | null>(null);

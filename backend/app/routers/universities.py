@@ -13,6 +13,8 @@ from app.schemas import (
     CourseListItem,
     CourseSummaryRefreshResponse,
     OfferingResponse,
+    ProfessorDetailResponse,
+    ProfessorListItem,
     ReviewResponse,
     SemesterTrendPoint,
     UniversityDetailResponse,
@@ -20,6 +22,7 @@ from app.schemas import (
     UniversityTopicAnalyticsResponse,
 )
 from app.services.course_service import course_service, review_service
+from app.services.professor_service import professor_service
 from app.services.university_service import university_service
 
 router = APIRouter(prefix="/api/v1/universities", tags=["universities"])
@@ -170,3 +173,26 @@ def get_university_top_topics(
         "university_name": university["name"],
         "topics": topics,
     }
+
+
+@router.get("/{university_id}/professors", response_model=list[ProfessorListItem])
+def list_university_professors(
+    university_id: UUID,
+    q: Optional[str] = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    if not university_service.get_university(db, university_id):
+        raise HTTPException(status_code=404, detail="University not found")
+    return professor_service.list_professors(db, university_id, query=q)
+
+
+@router.get("/{university_id}/professors/{professor_id}", response_model=ProfessorDetailResponse)
+def get_university_professor(
+    university_id: UUID,
+    professor_id: UUID,
+    db: Session = Depends(get_db),
+):
+    professor = professor_service.get_professor(db, university_id, professor_id)
+    if not professor:
+        raise HTTPException(status_code=404, detail="Professor not found")
+    return professor

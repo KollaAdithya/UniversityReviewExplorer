@@ -38,6 +38,7 @@ gcloud iam service-accounts create course-review-run \
 for role in \
   roles/cloudsql.client \
   roles/bigquery.dataEditor \
+  roles/bigquery.jobUser \
   roles/aiplatform.user \
   roles/secretmanager.secretAccessor; do
   gcloud projects add-iam-policy-binding "$GCP_PROJECT" \

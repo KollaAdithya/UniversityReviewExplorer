@@ -49,6 +49,12 @@ export function UniversitySearchPage() {
             <span className="rounded-full bg-ink-100 px-3 py-1 font-semibold text-ink-700">
               Public RMP dataset
             </span>
+            <Link
+              to="/analytics/top-topics"
+              className="rounded-full bg-violet-50 px-3 py-1 font-semibold text-violet-800 ring-1 ring-violet-200/60 hover:bg-violet-100"
+            >
+              Cross-university insights →
+            </Link>
           </div>
         </PageHero>
       }

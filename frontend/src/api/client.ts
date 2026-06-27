@@ -141,6 +141,89 @@ export interface AuthMe {
   display_name?: string;
 }
 
+export interface ProfessorListItem {
+  professor_id: string;
+  professor_name: string;
+  review_count: number;
+  avg_rating: number;
+  sentiment_score: number;
+  top_topics: TopTopicItem[];
+}
+
+export interface ProfessorCourseItem {
+  course_code: string;
+  course_name: string;
+  review_count: number;
+}
+
+export interface ProfessorDetail {
+  professor_id: string;
+  professor_name: string;
+  email: string;
+  review_count: number;
+  avg_rating: number;
+  positive: number;
+  neutral: number;
+  negative: number;
+  sentiment_score: number;
+  top_topics: TopTopicItem[];
+  courses: ProfessorCourseItem[];
+}
+
+export interface DatasetInfo {
+  id: string;
+  name: string;
+  source_url: string;
+  license: string;
+  coverage: string;
+  local_path: string;
+  download_command: string;
+  import_command: string;
+  file_exists: boolean;
+  file_size_bytes: number;
+  file_modified_at: string | null;
+}
+
+export interface DataCatalog {
+  datasets: DatasetInfo[];
+  database: { university_count: number; course_count: number; review_count: number };
+  last_import: ImportRun | null;
+}
+
+export interface ImportRun {
+  run_id: string;
+  source_file: string;
+  status: string;
+  rows_imported: number;
+  rows_skipped: number;
+  universities_created: number;
+  error_message: string | null;
+  triggered_by: string | null;
+  started_at: string;
+  finished_at: string | null;
+}
+
+export interface UniversitySentimentRow {
+  university_name: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+  total: number;
+  positive_pct: number;
+  sentiment_score: number;
+}
+
+export interface BigQueryDashboard {
+  enabled: boolean;
+  table_id: string;
+  source: string;
+  row_count: number;
+  bq_error: string | null;
+  sentiment_by_university: UniversitySentimentRow[];
+  global_top_topics: TopTopicItem[];
+  sync_trigger: string;
+}
+
 export const api = {
   getHealth: () => request<HealthResponse>("/health"),
   getMe: () => request<AuthMe>("/api/v1/auth/me"),
@@ -188,4 +271,23 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  getDataCatalog: () => request<DataCatalog>("/api/v1/data/catalog"),
+  getBigQueryDashboard: () => request<BigQueryDashboard>("/api/v1/data/bigquery-dashboard"),
+  listImportRuns: () => request<ImportRun[]>("/api/v1/data/import-runs"),
+  recordImportRun: (sourceFile = "data/rmp_public.csv") =>
+    request<ImportRun>("/api/v1/data/import-runs/record", {
+      method: "POST",
+      body: JSON.stringify({ source_file: sourceFile }),
+    }),
+  triggerImport: () =>
+    request<ImportRun>("/api/v1/data/import-runs/trigger", {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+  listProfessors: (universityId: string, q?: string) =>
+    request<ProfessorListItem[]>(
+      `/api/v1/universities/${universityId}/professors${q ? `?q=${encodeURIComponent(q)}` : ""}`,
+    ),
+  getProfessor: (universityId: string, professorId: string) =>
+    request<ProfessorDetail>(`/api/v1/universities/${universityId}/professors/${professorId}`),
 };

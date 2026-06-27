@@ -23,6 +23,12 @@ export function AuthBar() {
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            to="/analytics/top-topics"
+            className="hidden rounded-lg px-3 py-1.5 text-sm font-medium text-brand-100 transition hover:bg-white/10 sm:inline"
+          >
+            Insights
+          </Link>
           {!loading && location.pathname !== "/login" && !user && (
             <Link
               to="/login"

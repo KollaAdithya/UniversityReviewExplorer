@@ -39,3 +39,15 @@ def insert_review_row(
     errors = client.insert_rows_json(table_id, [row])
     if errors:
         raise RuntimeError(f"BigQuery insert failed: {errors}")
+
+
+def count_analytics_rows() -> int:
+    if not settings.enable_bigquery or not settings.gcp_project:
+        return 0
+
+    from google.cloud import bigquery
+
+    client = bigquery.Client(project=settings.gcp_project)
+    table_id = f"{settings.gcp_project}.{settings.bigquery_dataset}.{settings.bigquery_table}"
+    rows = list(client.query(f"SELECT COUNT(*) AS cnt FROM `{table_id}`").result())
+    return int(rows[0]["cnt"]) if rows else 0
